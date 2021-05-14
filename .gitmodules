@@ -1,0 +1,3 @@
+[submodule "SFAST"]
+	path = SFAST
+	url = https://github.com/wzygzlm/SFAST

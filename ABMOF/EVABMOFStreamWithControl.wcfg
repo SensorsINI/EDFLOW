@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="EVABMOFStreamWithControl.wdb" id="1">
+         <top_modules>
+            <top_module name="apatb_EVABMOFStreamWithControl_top" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="1039475000000fs"></ZoomStartTime>
+      <ZoomEndTime time="1057875000001fs"></ZoomEndTime>
+      <Cursor1Time time="1053215000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="224"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="93" />
+   <wvobject fp_name="group1" type="group">
+      <obj_property name="label">Design Top Signals</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="group2" type="group">
+         <obj_property name="label">C Outputs</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="group3" type="group">
+            <obj_property name="label">status(wire)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/status_V_ap_vld" type="logic">
+               <obj_property name="ElementShortName">status_V_ap_vld</obj_property>
+               <obj_property name="ObjectShortName">status_V_ap_vld</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/status_V" type="array">
+               <obj_property name="ElementShortName">status_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">status_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group6" type="group">
+            <obj_property name="label">pixelDataStream(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/pixelDataStream_V_V_write" type="logic">
+               <obj_property name="ElementShortName">pixelDataStream_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">pixelDataStream_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/pixelDataStream_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">pixelDataStream_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">pixelDataStream_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/pixelDataStream_V_V_din" type="array">
+               <obj_property name="ElementShortName">pixelDataStream_V_V_din[16:0]</obj_property>
+               <obj_property name="ObjectShortName">pixelDataStream_V_V_din[16:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group10" type="group">
+            <obj_property name="label">polStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/polStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">polStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">polStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/polStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">polStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">polStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/polStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">polStreamOut_V_V_din[0:0]</obj_property>
+               <obj_property name="ObjectShortName">polStreamOut_V_V_din[0:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group14" type="group">
+            <obj_property name="label">tsStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/tsStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">tsStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">tsStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/tsStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">tsStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">tsStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/tsStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">tsStreamOut_V_V_din[63:0]</obj_property>
+               <obj_property name="ObjectShortName">tsStreamOut_V_V_din[63:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group18" type="group">
+            <obj_property name="label">yStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/yStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">yStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">yStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/yStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">yStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">yStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/yStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">yStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="ObjectShortName">yStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group22" type="group">
+            <obj_property name="label">xStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/xStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">xStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">xStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/xStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">xStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">xStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/xStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">xStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="ObjectShortName">xStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group26" type="group">
+         <obj_property name="label">C Inputs</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="group27" type="group">
+            <obj_property name="label">config(wire)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/config_V" type="array">
+               <obj_property name="ElementShortName">config_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">config_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group29" type="group">
+            <obj_property name="label">controlStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/controlStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">controlStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">controlStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/controlStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">controlStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">controlStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/controlStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">controlStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="ObjectShortName">controlStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group33" type="group">
+            <obj_property name="label">polStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/polStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">polStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">polStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/polStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">polStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">polStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/polStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">polStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="ObjectShortName">polStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group37" type="group">
+            <obj_property name="label">tsStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <obj_property name="isExpanded"></obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/tsStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">tsStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">tsStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/tsStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">tsStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">tsStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/tsStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">tsStreamIn_V_V_dout[63:0]</obj_property>
+               <obj_property name="ObjectShortName">tsStreamIn_V_V_dout[63:0]</obj_property>
+               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group41" type="group">
+            <obj_property name="label">yStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/yStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">yStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">yStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/yStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">yStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">yStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/yStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">yStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="ObjectShortName">yStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group45" type="group">
+            <obj_property name="label">xStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/xStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">xStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">xStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/xStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">xStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">xStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/xStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">xStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="ObjectShortName">xStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group49" type="group">
+         <obj_property name="label">Block-level IO Handshake</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/ap_done" type="logic">
+            <obj_property name="ElementShortName">ap_done</obj_property>
+            <obj_property name="ObjectShortName">ap_done</obj_property>
+         </wvobject>
+         <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/ap_start" type="logic">
+            <obj_property name="ElementShortName">ap_start</obj_property>
+            <obj_property name="ObjectShortName">ap_start</obj_property>
+         </wvobject>
+         <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/ap_ready" type="logic">
+            <obj_property name="ElementShortName">ap_ready</obj_property>
+            <obj_property name="ObjectShortName">ap_ready</obj_property>
+         </wvobject>
+         <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/ap_idle" type="logic">
+            <obj_property name="ElementShortName">ap_idle</obj_property>
+            <obj_property name="ObjectShortName">ap_idle</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group54" type="group">
+         <obj_property name="label">Reset</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/ap_rst" type="logic">
+            <obj_property name="ElementShortName">ap_rst</obj_property>
+            <obj_property name="ObjectShortName">ap_rst</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group56" type="group">
+         <obj_property name="label">Clock</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/ap_clk" type="logic">
+            <obj_property name="ElementShortName">ap_clk</obj_property>
+            <obj_property name="ObjectShortName">ap_clk</obj_property>
+         </wvobject>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group58" type="group">
+      <obj_property name="label">Test Bench Signals</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="group59" type="group">
+         <obj_property name="label">Internal Signals</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="group60" type="group">
+            <obj_property name="label">Simulation Status</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AUTOTB_TRANSACTION_NUM" type="array">
+               <obj_property name="ElementShortName">AUTOTB_TRANSACTION_NUM[31:0]</obj_property>
+               <obj_property name="ObjectShortName">AUTOTB_TRANSACTION_NUM[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/ready_cnt" type="array">
+               <obj_property name="ElementShortName">ready_cnt[31:0]</obj_property>
+               <obj_property name="ObjectShortName">ready_cnt[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/done_cnt" type="array">
+               <obj_property name="ElementShortName">done_cnt[31:0]</obj_property>
+               <obj_property name="ObjectShortName">done_cnt[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group61" type="group">
+            <obj_property name="label">Port Depth</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_xStreamIn_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_xStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_xStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_yStreamIn_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_yStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_yStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_tsStreamIn_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_tsStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_tsStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_polStreamIn_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_polStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_polStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_controlStreamIn_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_controlStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_controlStreamIn_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_xStreamOut_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_xStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_xStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_yStreamOut_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_yStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_yStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_tsStreamOut_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_tsStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_tsStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_polStreamOut_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_polStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_polStreamOut_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_pixelDataStream_V_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_pixelDataStream_V_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_pixelDataStream_V_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/LENGTH_status_V" type="array">
+               <obj_property name="ElementShortName">LENGTH_status_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">LENGTH_status_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group76" type="group">
+         <obj_property name="label">C Outputs</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject fp_name="group77" type="group">
+            <obj_property name="label">status(wire)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/status_V_ap_vld" type="logic">
+               <obj_property name="ElementShortName">status_V_ap_vld</obj_property>
+               <obj_property name="ObjectShortName">status_V_ap_vld</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/status_V" type="array">
+               <obj_property name="ElementShortName">status_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">status_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group80" type="group">
+            <obj_property name="label">pixelDataStream(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/pixelDataStream_V_V_write" type="logic">
+               <obj_property name="ElementShortName">pixelDataStream_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">pixelDataStream_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/pixelDataStream_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">pixelDataStream_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">pixelDataStream_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/pixelDataStream_V_V_din" type="array">
+               <obj_property name="ElementShortName">pixelDataStream_V_V_din[16:0]</obj_property>
+               <obj_property name="ObjectShortName">pixelDataStream_V_V_din[16:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group84" type="group">
+            <obj_property name="label">polStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/polStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">polStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">polStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/polStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">polStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">polStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/polStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">polStreamOut_V_V_din[0:0]</obj_property>
+               <obj_property name="ObjectShortName">polStreamOut_V_V_din[0:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group88" type="group">
+            <obj_property name="label">tsStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/tsStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">tsStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">tsStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/tsStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">tsStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">tsStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/tsStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">tsStreamOut_V_V_din[63:0]</obj_property>
+               <obj_property name="ObjectShortName">tsStreamOut_V_V_din[63:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group92" type="group">
+            <obj_property name="label">yStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/yStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">yStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">yStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/yStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">yStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">yStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/yStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">yStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="ObjectShortName">yStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group96" type="group">
+            <obj_property name="label">xStreamOut(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/xStreamOut_V_V_write" type="logic">
+               <obj_property name="ElementShortName">xStreamOut_V_V_write</obj_property>
+               <obj_property name="ObjectShortName">xStreamOut_V_V_write</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/xStreamOut_V_V_full_n" type="logic">
+               <obj_property name="ElementShortName">xStreamOut_V_V_full_n</obj_property>
+               <obj_property name="ObjectShortName">xStreamOut_V_V_full_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/xStreamOut_V_V_din" type="array">
+               <obj_property name="ElementShortName">xStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="ObjectShortName">xStreamOut_V_V_din[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group100" type="group">
+         <obj_property name="label">C Inputs</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <wvobject fp_name="group101" type="group">
+            <obj_property name="label">config(wire)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/config_V" type="array">
+               <obj_property name="ElementShortName">config_V[31:0]</obj_property>
+               <obj_property name="ObjectShortName">config_V[31:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group103" type="group">
+            <obj_property name="label">controlStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/controlStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">controlStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">controlStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/controlStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">controlStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">controlStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/controlStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">controlStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="ObjectShortName">controlStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group107" type="group">
+            <obj_property name="label">polStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/polStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">polStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">polStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/polStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">polStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">polStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/polStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">polStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="ObjectShortName">polStreamIn_V_V_dout[0:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group111" type="group">
+            <obj_property name="label">tsStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/tsStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">tsStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">tsStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/tsStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">tsStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">tsStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/tsStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">tsStreamIn_V_V_dout[63:0]</obj_property>
+               <obj_property name="ObjectShortName">tsStreamIn_V_V_dout[63:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group115" type="group">
+            <obj_property name="label">yStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/yStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">yStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">yStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/yStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">yStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">yStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/yStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">yStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="ObjectShortName">yStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group119" type="group">
+            <obj_property name="label">xStreamIn(fifo)</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/xStreamIn_V_V_read" type="logic">
+               <obj_property name="ElementShortName">xStreamIn_V_V_read</obj_property>
+               <obj_property name="ObjectShortName">xStreamIn_V_V_read</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/xStreamIn_V_V_empty_n" type="logic">
+               <obj_property name="ElementShortName">xStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="ObjectShortName">xStreamIn_V_V_empty_n</obj_property>
+               <obj_property name="CustomSignalColor">#ffff00</obj_property>
+               <obj_property name="UseCustomSignalColor">true</obj_property>
+            </wvobject>
+            <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/xStreamIn_V_V_dout" type="array">
+               <obj_property name="ElementShortName">xStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="ObjectShortName">xStreamIn_V_V_dout[15:0]</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
+            </wvobject>
+         </wvobject>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">feedbackAndCombineOu_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">feedbackAndCombineOu_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">feedbackAndCombineOu_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">feedbackAndCombineOu_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">truncateStreamWithCo_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">truncateStreamWithCo_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/start_for_feedbackAndCombineOu_U0_full_n" type="logic">
+      <obj_property name="ElementShortName">start_for_feedbackAndCombineOu_U0_full_n</obj_property>
+      <obj_property name="ObjectShortName">start_for_feedbackAndCombineOu_U0_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/start_for_accumulateStreamScal_4_U0_full_n" type="logic">
+      <obj_property name="ElementShortName">start_for_accumulateStreamScal_4_U0_full_n</obj_property>
+      <obj_property name="ObjectShortName">start_for_accumulateStreamScal_4_U0_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/start_for_rwSlicesScale2WithSe_U0_full_n" type="logic">
+      <obj_property name="ElementShortName">start_for_rwSlicesScale2WithSe_U0_full_n</obj_property>
+      <obj_property name="ObjectShortName">start_for_rwSlicesScale2WithSe_U0_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/start_for_rwSlicesScale2WithSe_U0_full_n" type="logic">
+      <obj_property name="ElementShortName">start_for_rwSlicesScale2WithSe_U0_full_n</obj_property>
+      <obj_property name="ObjectShortName">start_for_rwSlicesScale2WithSe_U0_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0_start_full_n" type="logic">
+      <obj_property name="ElementShortName">truncateStreamWithCo_U0_start_full_n</obj_property>
+      <obj_property name="ObjectShortName">truncateStreamWithCo_U0_start_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0/real_start" type="logic">
+      <obj_property name="ElementShortName">real_start</obj_property>
+      <obj_property name="ObjectShortName">real_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0/xStreamOut_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">xStreamOut_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">xStreamOut_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0/yStreamOut_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">yStreamOut_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">yStreamOut_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0/tsStreamOut_V_full_n" type="logic">
+      <obj_property name="ElementShortName">tsStreamOut_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">tsStreamOut_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/truncateStreamWithCo_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">truncateStreamWithCo_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">truncateStreamWithCo_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rotateSliceAllScales_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">rotateSliceAllScales_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">rotateSliceAllScales_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/start_for_rwSlicesScale1WithSe_U0_full_n" type="logic">
+      <obj_property name="ElementShortName">start_for_rwSlicesScale1WithSe_U0_full_n</obj_property>
+      <obj_property name="ObjectShortName">start_for_rwSlicesScale1WithSe_U0_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/start_for_rwSlicesScale0WithSe_U0_full_n" type="logic">
+      <obj_property name="ElementShortName">start_for_rwSlicesScale0WithSe_U0_full_n</obj_property>
+      <obj_property name="ObjectShortName">start_for_rwSlicesScale0WithSe_U0_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rotateSliceAllScales_U0_start_full_n" type="logic">
+      <obj_property name="ElementShortName">rotateSliceAllScales_U0_start_full_n</obj_property>
+      <obj_property name="ObjectShortName">rotateSliceAllScales_U0_start_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rotateSliceAllScales_U0/real_start" type="logic">
+      <obj_property name="ElementShortName">real_start</obj_property>
+      <obj_property name="ObjectShortName">real_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rotateSliceAllScales_U0/start_write" type="logic">
+      <obj_property name="ElementShortName">start_write</obj_property>
+      <obj_property name="ObjectShortName">start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rotateSliceAllScales_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">rotateSliceAllScales_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">rotateSliceAllScales_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale2WithSe_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale2WithSe_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/idxStream_V_V_dout" type="array">
+      <obj_property name="ElementShortName">idxStream_V_V_dout[1:0]</obj_property>
+      <obj_property name="ObjectShortName">idxStream_V_V_dout[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/xStream_V_V_dout" type="array">
+      <obj_property name="ElementShortName">xStream_V_V_dout[9:0]</obj_property>
+      <obj_property name="ObjectShortName">xStream_V_V_dout[9:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/select_V_dout" type="array">
+      <obj_property name="ElementShortName">select_V_dout[0:0]</obj_property>
+      <obj_property name="ObjectShortName">select_V_dout[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0_start_write" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale2WithSe_U0_start_write</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale2WithSe_U0_start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/refStreamOutScale2_V_V_write" type="logic">
+      <obj_property name="ElementShortName">refStreamOutScale2_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">refStreamOutScale2_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/tagStreamOutScale2_V_V_write" type="logic">
+      <obj_property name="ElementShortName">tagStreamOutScale2_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">tagStreamOutScale2_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/refStreamOutScale2_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">refStreamOutScale2_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">refStreamOutScale2_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/tagStreamOutScale2_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">tagStreamOutScale2_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">tagStreamOutScale2_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale2WithSe_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale2WithSe_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">colStreamToColSumSca_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">colStreamToColSumSca_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale2WithSe_U0/select_V_dout" type="array">
+      <obj_property name="ElementShortName">select_V_dout[0:0]</obj_property>
+      <obj_property name="ObjectShortName">select_V_dout[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/colStream0_V_V_read" type="logic">
+      <obj_property name="ElementShortName">colStream0_V_V_read</obj_property>
+      <obj_property name="ObjectShortName">colStream0_V_V_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/colStream1_V_V_read" type="logic">
+      <obj_property name="ElementShortName">colStream1_V_V_read</obj_property>
+      <obj_property name="ObjectShortName">colStream1_V_V_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/colStream0_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">colStream0_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">colStream0_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/colStream1_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">colStream1_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">colStream1_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0_start_write" type="logic">
+      <obj_property name="ElementShortName">colStreamToColSumSca_U0_start_write</obj_property>
+      <obj_property name="ObjectShortName">colStreamToColSumSca_U0_start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/outStream_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">outStream_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">outStream_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/refZeroCntStream_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">refZeroCntStream_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">refZeroCntStream_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/tagColValidCntStream_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">tagColValidCntStream_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">tagColValidCntStream_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0/refTagValidCntStream_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">refTagValidCntStream_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">refTagValidCntStream_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">colStreamToColSumSca_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">colStreamToColSumSca_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/accumulateStreamScal_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">accumulateStreamScal_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">accumulateStreamScal_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/accumulateStreamScal_U0/select_V_dout" type="array">
+      <obj_property name="ElementShortName">select_V_dout[0:0]</obj_property>
+      <obj_property name="ObjectShortName">select_V_dout[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/accumulateStreamScal_U0/outStream_V_full_n" type="logic">
+      <obj_property name="ElementShortName">outStream_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">outStream_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/accumulateStreamScal_U0/OF_yStream_V_full_n" type="logic">
+      <obj_property name="ElementShortName">OF_yStream_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">OF_yStream_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/accumulateStreamScal_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">accumulateStreamScal_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">accumulateStreamScal_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">findStreamMinScale2W_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">findStreamMinScale2W_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0/select_V_dout" type="array">
+      <obj_property name="ElementShortName">select_V_dout[0:0]</obj_property>
+      <obj_property name="ObjectShortName">select_V_dout[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0_start_write" type="logic">
+      <obj_property name="ElementShortName">findStreamMinScale2W_U0_start_write</obj_property>
+      <obj_property name="ObjectShortName">findStreamMinScale2W_U0_start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0/minStream_V_V_write" type="logic">
+      <obj_property name="ElementShortName">minStream_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">minStream_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0/minStream_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">minStream_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">minStream_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0/OFStream_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">OFStream_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">OFStream_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/findStreamMinScale2W_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">findStreamMinScale2W_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">findStreamMinScale2W_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/Block_ZlsILi8ELb1EE_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">Block_ZlsILi8ELb1EE_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">Block_ZlsILi8ELb1EE_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/Block_ZlsILi8ELb1EE_2_U0/miniSumStreamScale2_V_V_read" type="logic">
+      <obj_property name="ElementShortName">miniSumStreamScale2_V_V_read</obj_property>
+      <obj_property name="ObjectShortName">miniSumStreamScale2_V_V_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/Block_ZlsILi8ELb1EE_2_U0/miniSumStreamScale2_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">miniSumStreamScale2_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">miniSumStreamScale2_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/Block_ZlsILi8ELb1EE_2_U0/yInitOffsetScale1StreamCopy_V_V_write" type="logic">
+      <obj_property name="ElementShortName">yInitOffsetScale1StreamCopy_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">yInitOffsetScale1StreamCopy_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/Block_ZlsILi8ELb1EE_2_U0/yInitOffsetScale1StreamCopy_V_V_full_n" type="logic">
+      <obj_property name="ElementShortName">yInitOffsetScale1StreamCopy_V_V_full_n</obj_property>
+      <obj_property name="ObjectShortName">yInitOffsetScale1StreamCopy_V_V_full_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/Block_ZlsILi8ELb1EE_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">Block_ZlsILi8ELb1EE_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">Block_ZlsILi8ELb1EE_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale1WithSe_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale1WithSe_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0/xInitOffsetStream_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">xInitOffsetStream_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">xInitOffsetStream_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0/yInitOffsetStream_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">yInitOffsetStream_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">yInitOffsetStream_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0_start_write" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale1WithSe_U0_start_write</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale1WithSe_U0_start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0/refStreamOutScale1_V_V_write" type="logic">
+      <obj_property name="ElementShortName">refStreamOutScale1_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">refStreamOutScale1_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0/tagStreamOutScale1_V_V_write" type="logic">
+      <obj_property name="ElementShortName">tagStreamOutScale1_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">tagStreamOutScale1_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale1WithSe_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale1WithSe_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale1WithSe_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">colStreamToColSumSca_2_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">colStreamToColSumSca_2_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0/select_V_read" type="logic">
+      <obj_property name="ElementShortName">select_V_read</obj_property>
+      <obj_property name="ObjectShortName">select_V_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0/select_V_dout" type="array">
+      <obj_property name="ElementShortName">select_V_dout[0:0]</obj_property>
+      <obj_property name="ObjectShortName">select_V_dout[0:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0/colStream0_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">colStream0_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">colStream0_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0/colStream1_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">colStream1_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">colStream1_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0_start_write" type="logic">
+      <obj_property name="ElementShortName">colStreamToColSumSca_2_U0_start_write</obj_property>
+      <obj_property name="ObjectShortName">colStreamToColSumSca_2_U0_start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/colStreamToColSumSca_2_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">colStreamToColSumSca_2_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">colStreamToColSumSca_2_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale0WithSe_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale0WithSe_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0_start_write" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale0WithSe_U0_start_write</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale0WithSe_U0_start_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0/xInitOffsetStream_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">xInitOffsetStream_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">xInitOffsetStream_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0/yInitOffsetStream_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">yInitOffsetStream_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">yInitOffsetStream_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0/refStreamOut_V_V_write" type="logic">
+      <obj_property name="ElementShortName">refStreamOut_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">refStreamOut_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0/tagStreamOut_V_V_write" type="logic">
+      <obj_property name="ElementShortName">tagStreamOut_V_V_write</obj_property>
+      <obj_property name="ObjectShortName">tagStreamOut_V_V_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/rwSlicesScale0WithSe_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">rwSlicesScale0WithSe_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">rwSlicesScale0WithSe_U0_ap_ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0_ap_start" type="logic">
+      <obj_property name="ElementShortName">feedbackAndCombineOu_U0_ap_start</obj_property>
+      <obj_property name="ObjectShortName">feedbackAndCombineOu_U0_ap_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/packetEventDataStream_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">packetEventDataStream_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">packetEventDataStream_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/miniSumStreamScale0_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">miniSumStreamScale0_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">miniSumStreamScale0_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/OFRetStreamScale0_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">OFRetStreamScale0_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">OFRetStreamScale0_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/miniSumStreamScale1_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">miniSumStreamScale1_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">miniSumStreamScale1_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/OFRetStreamScale1_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">OFRetStreamScale1_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">OFRetStreamScale1_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/miniSumStreamScale2_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">miniSumStreamScale2_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">miniSumStreamScale2_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/OFRetStreamScale2_V_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">OFRetStreamScale2_V_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">OFRetStreamScale2_V_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0/glRotateFlg_V_empty_n" type="logic">
+      <obj_property name="ElementShortName">glRotateFlg_V_empty_n</obj_property>
+      <obj_property name="ObjectShortName">glRotateFlg_V_empty_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/apatb_EVABMOFStreamWithControl_top/AESL_inst_EVABMOFStreamWithControl/feedbackAndCombineOu_U0_ap_ready" type="logic">
+      <obj_property name="ElementShortName">feedbackAndCombineOu_U0_ap_ready</obj_property>
+      <obj_property name="ObjectShortName">feedbackAndCombineOu_U0_ap_ready</obj_property>
+   </wvobject>
+</wave_config>

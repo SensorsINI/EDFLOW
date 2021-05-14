@@ -1,0 +1,17 @@
+vivado_hls.log
+*~
+ABMOF/solution1/syn
+ABMOF/solution1/.autopilot
+ABMOF/solution1/csim
+ABMOF/solution1/sim
+ABMOF/solution1/impl
+ABMOF/solution2/syn
+ABMOF/solution2/.autopilot
+ABMOF/solution2/csim
+ABMOF/solution2/sim
+ABMOF/solution2/impl
+**/syn
+**/.autopilot
+**/csim
+**/sim
+**/impl
