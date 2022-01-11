@@ -24,7 +24,7 @@ To synthesis the project, you should replace the DAVIS controller IP which is ca
 Or you can simply design your own schematic with ABMOF, SFAST or some other IPs provided here.
 
 ## Website
-Interested in this project, refer to https://sites.google.com/view/edflow21/home for more details.
+Interested in this project, check https://sites.google.com/view/edflow21/home for more videos.
 
 ## Citation
 M. LIu and T. Delbruck, “EDFLOW: Event Driven Optical Flow Camera with Keypoint Detection and Adaptive Block Matching,” IEEE Trans. Circuits Syst. Video Technol., vol. (under review), 2022. 
