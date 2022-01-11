@@ -14,10 +14,8 @@ The source code of all these IPs except DAVIS controller can be found in EDFLOW_
 DAVIS controller is a private IP from iniVation.
 
 ## How to use it
-It is very simple to restore the vivado project by simply running the script in the EDFLOW_Vivado_prj folder.
+It is very easy to restore the vivado project by simply running the script restore_EDFLOW.tcl in the EDFLOW_Vivado_prj folder.
 Detail steps are shown in that folder.
-To synthesis the project, you should replace the DAVIS controller IP which is called testDVSSM in the schematic to your own DVS state machine.
-Or you can simply design your own schematic with ABMOF, SFAST or some other IPs provided here.
 
 ## Website
 Interested in this project, check https://sites.google.com/view/edflow21/home for more videos.
