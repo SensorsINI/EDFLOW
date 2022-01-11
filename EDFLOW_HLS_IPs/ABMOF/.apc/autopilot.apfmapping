@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="abmofAccel.h" path="E:\xfOpenCV\hls_2018_1\topParseEvents\src\abmofAccel.h"/>
+    <originFiles name="abmofAccel.cpp" path="E:\xfOpenCV\hls_2018_1\topParseEvents\src\abmofAccel.cpp"/>
+  </source>
+  <testbench>
+    <originFiles name="test.cpp" path="E:\xfOpenCV\hls_2018_1\topParseEvents\src\test.cpp"/>
+  </testbench>
+</autopilotfilemapping:AutoPilotFileMapping>

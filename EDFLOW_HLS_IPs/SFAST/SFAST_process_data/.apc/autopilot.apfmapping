@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="sfast.h" path="E:\xfOpenCV\hls_2018_1\SFAST\SFAST_process_data\src\sfast.h"/>
+    <originFiles name="sfast.cpp" path="E:\xfOpenCV\hls_2018_1\SFAST\SFAST_process_data\src\sfast.cpp"/>
+  </source>
+  <testbench>
+    <originFiles name="test.cpp" path="E:\xfOpenCV\hls_2018_1\SFAST\SFAST_process_data\src\test.cpp"/>
+  </testbench>
+</autopilotfilemapping:AutoPilotFileMapping>
