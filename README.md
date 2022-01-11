@@ -1,12 +1,12 @@
 # EDFLOW
 EDFLOW is the first Event Driven FLOW camera. 
-It combines Adaptive Block Matching Optical Flow (**ABMOF**) and Slice FAST (**SFAST**) corner detector on FPGA.
+It combines Adaptive Block Matching Optical Flow (__ABMOF__) and Slice FAST (__SFAST__) corner detector on FPGA.
 This repo includes the vivado project and Vivado HLS implementation of two core IPs (ABMOF and SFAST).
 
 The purpose of this repo is for academic research. Commercial use is strictly forbiddened.
 
 ## Architecture
-The platform of this project is called DAVIS346Zynq, its architecture is illustrated in the below figure.
+The platform of this project is called _DAVIS346Zynq_, its architecture is illustrated in the below figure.
 ![Hardware-Architecture-whole](https://user-images.githubusercontent.com/8357338/125651414-6b750f54-e071-42e0-a899-bac5fa00455c.jpg)
 As shown in the figure, it is consists of 3 parts: daughter board, FPGA and USB PHY.
 There are several IPs are implemented on FPGA including DAVIS controller, SPI master, SFAST, ABMOF, output switch, VGA, USB, etc.
