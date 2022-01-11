@@ -6,7 +6,9 @@
 #include "ap_axi_sdata.h"
 #include <math.h>
 
-#define DEBUG 0
+// If set 1, it can print some variables, but print is not a synthesizable function. 
+// It can only be used for C simulation.
+#define DEBUG 0     
 #define CUST_DATA_MASK 0x3ff
 #define POLARITY_SHIFT 11
 #define POLARITY_MASK (1 << POLARITY_SHIFT)  // 1 bit at bit 11
@@ -23,14 +25,14 @@
 #define AEDAT_POLARITY_X_ADDR_MASK (1023 << AEDAT_POLARITY_X_ADDR_SHIFT) // 10 bits from bits 12 to 21
 
 #define SLICES_NUMBER 4
-#define SLICE_WIDTH  512
-#define SLICE_HEIGHT 512
+#define SLICE_WIDTH  512    // Hardware slice width
+#define SLICE_HEIGHT 512    // Hardware slice height
 
-#define DVS_WIDTH  346
-#define DVS_HEIGHT 260
+#define DVS_WIDTH  346      // The real DVS sensor width
+#define DVS_HEIGHT 260      // The real DVS sensor height
 
 #define BITS_PER_PIXEL 4
-#define COMBINED_PIXELS 32
+#define COMBINED_PIXELS 32  // Concatenate several pixel to form a wider pixel data
 
 // ABMOF parameters, hardcoded:
 #define BLOCK_SIZE 11
@@ -38,8 +40,8 @@
 #define BLOCK_SIZE_SCALE_1 13
 #define BLOCK_SIZE_SCALE_0 25
 
-#define COL_SUM_BITS 16
-#define VALID_CNT_BITS 6
+#define COL_SUM_BITS 16    
+#define VALID_CNT_BITS 6    // Valid pixel counter bits
 
 #define BLOCK_AREA (BLOCK_SIZE * BLOCK_SIZE)
 #define BLOCK_AREA_SCALE_0 (BLOCK_SIZE_SCALE_0 * BLOCK_SIZE_SCALE_0)
@@ -164,22 +166,6 @@ void testTemp(uint64_t * data, sliceIdx_t idx, int16_t eventCnt,
 		int32_t *eventSlice);
 
 void feedback(apUint15_t miniSumRet, apUint6_t OFRet, apUint1_t rotateFlg, uint16_t *thrRet);
-
-void parseEvents(uint64_t * dataStream, int32_t eventsArraySize, int32_t *eventSlice);
-
-void EVABMOFStream(ap_uint<16> xIn, ap_uint<16> yIn, ap_uint<64> tsIn, ap_uint<1> polIn,
-		ap_uint<16> *xOut, ap_uint<16> *yOut, ap_uint<64> *tsOut, ap_uint<1> *polOut,
-		apUint17_t *pixelDataOut,
-		ap_uint<32> config, ap_uint<32> *status);
-
-void EVABMOFScalar(ap_uint<16> xIn, ap_uint<16> yIn, ap_uint<64> tsIn, ap_uint<1> polIn,
-		ap_uint<16> *xOut, ap_uint<16> *yOut, ap_uint<64> *tsOut, ap_uint<1> *polOut,
-		apUint17_t *pixelOut,
-		ap_uint<32> config, ap_uint<32> *status);
-
-void EVABMOFStreamNoConfigNoStaus(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn, hls::stream< ap_uint<64> > &tsStreamIn, hls::stream< ap_uint<1> > &polStreamIn,
-		hls::stream< ap_uint<16> > &xStreamOut, hls::stream< ap_uint<16> > &yStreamOut, hls::stream< ap_uint<64> > &tsStreamOut, hls::stream< ap_uint<1> > &polStreamOut,
-		hls::stream< ap_uint<17> > &pixelDataStream);
 
 void EVABMOFStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn,
 		hls::stream< ap_uint<64> > &tsStreamIn, hls::stream< ap_uint<1> > &polStreamIn,
