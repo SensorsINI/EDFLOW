@@ -4,6 +4,7 @@
 //#include "hls_math.h"
 #include "utils/x_hls_utils.h"
 
+// Event slices at all three scales, and each consists of 4 pieces.
 static col_pix_t glPLSlices[SLICES_NUMBER][SLICE_WIDTH][SLICE_HEIGHT/COMBINED_PIXELS];
 static col_pix_t glPLSlicesScale1[SLICES_NUMBER][SLICE_WIDTH/2][SLICE_HEIGHT/COMBINED_PIXELS/2];
 static col_pix_t glPLSlicesScale2[SLICES_NUMBER][SLICE_WIDTH/4][SLICE_HEIGHT/COMBINED_PIXELS/4];
@@ -16,10 +17,6 @@ sliceIdx_t oldIdxScale2 = glPLActiveSliceIdx;
 apUint1_t glRotateFlg = 0;
 // This flag is only for forward bypass directly.
 apUint1_t glRotateFlgBypass = 0;
-
-static uint16_t eventIterSize = 100;
-
-static hls::stream<uint16_t> glThrStream("glThresholdStream");
 
 static ap_uint<13> resetCnt, resetCntScale0, resetCntScale1, resetCntScale2;
 
@@ -184,6 +181,8 @@ void sadScale2(pix_t refBlock[BLOCK_SIZE_SCALE_2], pix_t targetBlocks[BLOCK_SIZE
 }
 
 
+// Obtail column SAD for two columns.
+// For scale 0.
 void colSADSumScale0(pix_t t1Col[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],
 			pix_t t2Col[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],
 			int16_t retVal[2*SEARCH_DISTANCE + 1])
@@ -225,6 +224,8 @@ void colSADSumScale0(pix_t t1Col[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],
 
 }
 
+// Obtail column SAD for two columns.
+// For scale 1.
 void colSADSumScale1(pix_t t1Col[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],
 			pix_t t2Col[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],
 			int16_t retVal[2*SEARCH_DISTANCE + 1])
@@ -266,6 +267,8 @@ void colSADSumScale1(pix_t t1Col[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],
 
 }
 
+// Obtail column SAD for two columns.
+// For scale 2.
 void colSADSumScale2(pix_t t1Col[BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE],
 			pix_t t2Col[BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE],
 			int16_t retVal[2*SEARCH_DISTANCE + 1])
@@ -310,6 +313,7 @@ void colSADSumScale2(pix_t t1Col[BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE],
 
 // This function is used to calculate the number of non-zero pixels in ref block, tag block
 // and the number of the number of identical non-zero pixels between both of them.
+// For scale 0.
 // TODO: continue to optimize this module.
 void colZeroCntScale0(pix_t t1Col[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],
 			pix_t t2Col[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],  ap_uint<6> *refColZeroCnt,
@@ -387,6 +391,7 @@ void colZeroCntScale0(pix_t t1Col[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],
 
 // This function is used to calculate the number of non-zero pixels in ref block, tag block
 // and the number of the number of identical non-zero pixels between both of them.
+// For scale 1.
 // TODO: continue to optimize this module.
 void colZeroCntScale1(pix_t t1Col[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],
 			pix_t t2Col[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],  ap_uint<6> *refColZeroCnt,
@@ -464,6 +469,7 @@ void colZeroCntScale1(pix_t t1Col[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],
 
 // This function is used to calculate the number of non-zero pixels in ref block, tag block
 // and the number of the number of identical non-zero pixels between both of them.
+// For scale 2.
 // TODO: continue to optimize this module.
 void colZeroCntScale2(pix_t t1Col[BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE],
 			pix_t t2Col[BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE],  ap_uint<6> *refColZeroCnt,
@@ -645,14 +651,6 @@ void writePixToCol(col_pix_t *colData, ap_uint<8> idx, pix_t pixData)
 	}
 }
 
-void resetPix(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
-{
-#pragma HLS INLINE
-	glPLSlices[sliceIdx][x][y/COMBINED_PIXELS] = 0;
-	glPLSlicesScale1[sliceIdx][x/2][y/COMBINED_PIXELS/2] = 0;
-	glPLSlicesScale2[sliceIdx][x/4][y/COMBINED_PIXELS/4] = 0;
-}
-
 void resetPixScale0(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 {
 #pragma HLS INLINE
@@ -671,70 +669,10 @@ void resetPixScale2(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 	glPLSlicesScale2[sliceIdx][x][y/COMBINED_PIXELS] = 0;
 }
 
-void writePix(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
-{
-#pragma HLS DEPENDENCE variable=glPLSlicesScale2 inter false
-#pragma HLS DEPENDENCE variable=glPLSlicesScale1 inter false
-#pragma HLS RESOURCE variable=glPLSlicesScale2 core=RAM_T2P_BRAM
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale2 cyclic factor=1 dim=3
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale2 complete dim=1
-#pragma HLS RESOURCE variable=glPLSlicesScale1 core=RAM_T2P_BRAM
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale1 cyclic factor=1 dim=3
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale1 complete dim=1
-#pragma HLS PIPELINE
-#pragma HLS RESOURCE variable=glPLSlices core=RAM_T2P_BRAM
-#pragma HLS INLINE
-#pragma HLS ARRAY_PARTITION variable=glPLSlices complete dim=1
-#pragma HLS ARRAY_PARTITION variable=glPLSlices cyclic factor=1 dim=3
-#pragma HLS DEPENDENCE variable=glPLSlices inter false
-	col_pix_t tmpData;
-	pix_t tmpTmpData;
-
-	ap_uint<8> yNewIdx = y%COMBINED_PIXELS;
-
-	tmpData = glPLSlices[sliceIdx][x][y/COMBINED_PIXELS];
-
-	tmpTmpData = readPixFromCol(tmpData, yNewIdx);
-
-	ap_uint<1> cmpFlg = ap_uint<1>(tmpTmpData < (ap_uint< BITS_PER_PIXEL >(0xff)));
-	tmpTmpData +=  cmpFlg;
-
-	writePixToCol(&tmpData, yNewIdx, tmpTmpData);
-
-	glPLSlices[sliceIdx][x][y/COMBINED_PIXELS] = tmpData;
-
-    // write scale 1
-	apUint10_t xScale1 = x/2;
-	apUint10_t yScale1 = y/2;
-    ap_uint<8> yNewIdxScale1 = yScale1%COMBINED_PIXELS;
-
-	col_pix_t tmpDataScale1;
-	pix_t tmpTmpDataScale1;
-
-	tmpDataScale1 = glPLSlicesScale1[sliceIdx][xScale1][yScale1/COMBINED_PIXELS];
-	tmpTmpDataScale1 = readPixFromCol(tmpDataScale1, yNewIdxScale1);
-	ap_uint<1> cmpFlgScale1 = ap_uint<1>(tmpTmpDataScale1 < (ap_uint< BITS_PER_PIXEL >(0xff)));
-	tmpTmpDataScale1 +=  cmpFlgScale1;
-	writePixToCol(&tmpDataScale1, yNewIdxScale1, tmpTmpDataScale1);
-    glPLSlicesScale1[sliceIdx][xScale1][yScale1/COMBINED_PIXELS] = tmpDataScale1;
-
-    // write scale 2
-    // write scale 1
-    apUint10_t xScale2 = x/4;
-    apUint10_t yScale2 = y/4;
-    ap_uint<8> yNewIdxScale2 = yScale2%COMBINED_PIXELS;
-
-	col_pix_t tmpDataScale2;
-	pix_t tmpTmpDataScale2;
-
-	tmpDataScale2 = glPLSlicesScale2[sliceIdx][xScale2][yScale2/COMBINED_PIXELS];
-	tmpTmpDataScale2 = readPixFromCol(tmpDataScale2, yNewIdxScale2);
-	ap_uint<1> cmpFlgScale2 = ap_uint<1>(tmpTmpDataScale2 < (ap_uint< BITS_PER_PIXEL >(0xff)));
-	tmpTmpDataScale2 +=  cmpFlgScale2;
-	writePixToCol(&tmpDataScale2, yNewIdxScale2, tmpTmpDataScale2);
-    glPLSlicesScale2[sliceIdx][xScale2][yScale2/COMBINED_PIXELS] = tmpDataScale2;
-}
-
+/*
+ * Accumulate event count number on pixel (x,y) of slice index sliceIdx.
+ * For scale 0.
+ */
 void writePixScale0(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 {
 #pragma HLS PIPELINE
@@ -760,6 +698,10 @@ void writePixScale0(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 	glPLSlices[sliceIdx][x][y/COMBINED_PIXELS] = tmpData;
 }
 
+/*
+ * Accumulate event count number on pixel (x,y) of slice index sliceIdx.
+ * For scale 1.
+ */
 void writePixScale1(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 {
 #pragma HLS DEPENDENCE variable=glPLSlicesScale1 inter false
@@ -784,6 +726,10 @@ void writePixScale1(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
     glPLSlicesScale1[sliceIdx][xScale1][yScale1/COMBINED_PIXELS] = tmpDataScale1;
 }
 
+/*
+ * Accumulate event count number on pixel (x,y) of slice index sliceIdx.
+ * For scale 2.
+ */
 void writePixScale2(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 {
 #pragma HLS DEPENDENCE variable=glPLSlicesScale2 inter false
@@ -809,7 +755,9 @@ void writePixScale2(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 }
 
 
-// for scale 0
+/**
+ * Read reference and target columns on scale 0 slices.
+ */
 void readBlockCols(apUint10_t x, apUint10_t y, ap_int<8> xInitOffset, ap_int<8> yInitOffset,
 		sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
 		pix_t refCol[BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE],
@@ -870,6 +818,9 @@ void readBlockCols(apUint10_t x, apUint10_t y, ap_int<8> xInitOffset, ap_int<8> 
 }
 
 
+/**
+ * Read reference and target columns on scale 1 slices.
+ */
 void readBlockColsScale1(apUint10_t x, apUint10_t y, ap_int<8> xInitOffset, ap_int<8> yInitOffset,
 		sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
 		pix_t refColScale1[BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE],
@@ -929,6 +880,9 @@ void readBlockColsScale1(apUint10_t x, apUint10_t y, ap_int<8> xInitOffset, ap_i
 	}
 }
 
+/**
+ * Read reference and target columns on scale 2 slices.
+ */
 void readBlockColsScale2(apUint10_t x, apUint10_t y, ap_int<8> xInitOffset, ap_int<8> yInitOffset,
 		sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
 		pix_t refColScale2[BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE],
@@ -987,169 +941,18 @@ void readBlockColsScale2(apUint10_t x, apUint10_t y, ap_int<8> xInitOffset, ap_i
 	}
 }
 
-void getXandY(const uint64_t * data, hls::stream<apUint10_t>  &xStream, hls::stream<apUint10_t> &yStream, hls::stream<uint32_t> &tsStream, hls::stream<apUint17_t> &packetEventDataStream)
-//void getXandY(const uint64_t * data, int32_t eventsArraySize, ap_uint<8> *xStream, ap_uint<8> *yStream)
-{
-#pragma HLS INLINE off
-#pragma HLS INLINE off
-
-	// Every event always consists of 2 int32_t which is 8bytes.
-//	getXandYLoop:for(int32_t i = 0; i < eventIterSize; i++)
-//	{
-		uint64_t tmp = *data;
-		apUint10_t xWr, yWr;
-		xWr = ((tmp) >> POLARITY_X_ADDR_SHIFT) & POLARITY_X_ADDR_MASK;
-		yWr = ((tmp) >> POLARITY_Y_ADDR_SHIFT) & POLARITY_Y_ADDR_MASK;
-		bool pol  = ((tmp) >> POLARITY_SHIFT) & POLARITY_MASK;
-		uint32_t ts = tmp >> 32;
-
-//		writePix(xWr, yWr, glPLActiveSliceIdx);
-//		resetPix(xWr, yWr, glPLActiveSliceIdx + 3);
-
-//		shiftCnt = 0;
-//		miniRetVal = 0x7fff;
-//		for(int8_t i = 0; i <= 2*SEARCH_DISTANCE; i++)
-//		{
-//				miniSumTmp[i] = 0;
-//		}
-//		for(int8_t i = 0; i <= 2*SEARCH_DISTANCE; i++)
-//		{
-//			for(int8_t j = 0; j <= 2*SEARCH_DISTANCE; j++)
-//			{
-//				localSumReg[i][j] = 0;
-//			}
-//		}
-
-		xStream << xWr;
-		yStream << yWr;
-		tsStream << ts;
-		packetEventDataStream << apUint17_t(xWr.to_int() + (yWr.to_int() << 8) + (pol << 16));
-//		*xStream++ = xWr;
-//		*yStream++ = yWr;
-//	}
-}
-
 static uint16_t areaEventRegs[AREA_NUMBER][AREA_NUMBER];
 static uint16_t areaEventThr = INIT_AREA_THERSHOLD;
-
-void rotateSliceNoRotationFlg(hls::stream<apUint10_t>  &xInStream, hls::stream<apUint10_t> &yInStream,
-				 hls::stream<apUint10_t> &xOutStream, hls::stream<apUint10_t> &yOutStream, hls::stream<sliceIdx_t> &idxStream)
-{
-#pragma HLS RESOURCE variable=areaEventRegs core=RAM_2P_LUTRAM
-#pragma HLS ARRAY_PARTITION variable=areaEventRegs complete dim=2
-#pragma HLS INLINE off
-//	glPLActiveSliceIdx--;
-
-//	rotateSliceOutLoop:for(int32_t i = 0; i < eventIterSize; i++)
-//	{
-		apUint10_t x, y;
-		x = xInStream.read();
-		y = yInStream.read();
-
-		uint16_t c = areaEventRegs[x/AREA_SIZE][y/AREA_SIZE];
-		c = c + 1;
-		areaEventRegs[x/AREA_SIZE][y/AREA_SIZE] = c;
-
-
-		// The area threshold reached, rotate the slice index and clear the areaEventRegs.
-		if (c > areaEventThr)
-		{
-			glPLActiveSliceIdx--;
-
-            for(int r = 0; r < 1; r++)
-            {
-                std::cout << "Rotated successfully from HW!!!!" << std::endl;
-                std::cout << "x is: " << x << "\t y is: " << y << "\t idx is: " << glPLActiveSliceIdx << std::endl;
-            }
-
-
-			rotateSliceLoop:for(int areaX = 0; areaX < AREA_NUMBER; areaX++)
-			{
-#pragma HLS PIPELINE
-				rotateSliceInnerLoop:for(int areaY = 0; areaY < AREA_NUMBER; areaY++)
-				{
-					areaEventRegs[areaX][areaY] = 0;
-				}
-			}
-
-//		   for (int16_t resetCnt = 0; resetCnt < 2048; resetCnt = resetCnt + 2)
-//		   {
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//		   }
-		}
-
-		xOutStream.write(x);
-		yOutStream.write(y);
-		idxStream.write(glPLActiveSliceIdx);
-//	}
-}
-
-// areaEventThr is occupied by feedback, here we use another value to copy its initial value.
-// Remember to update this value when areaEventThr is updated.
-uint16_t areaEventThrBak = areaEventThr;
-static uint32_t lastTsHW = 0, currentTsHW = 0;
-static ap_uint<9> deltaTsHW, deltaTsHWBak;
-void rotateSlice(hls::stream<apUint10_t>  &xInStream, hls::stream<apUint10_t> &yInStream, hls::stream<uint32_t> &tsInStream,
-				 hls::stream<apUint10_t> &xOutStream, hls::stream<apUint10_t> &yOutStream,
-				 hls::stream<sliceIdx_t> &idxStream)
-{
-#pragma HLS RESOURCE variable=areaEventRegs core=RAM_2P_LUTRAM
-#pragma HLS ARRAY_PARTITION variable=areaEventRegs complete dim=2
-#pragma HLS INLINE off
-//	glPLActiveSliceIdx--;
-
-	apUint10_t x, y;
-	x = xInStream.read();
-	y = yInStream.read();
-	uint32_t ts = tsInStream.read();
-
-	static uint16_t tmpThr = INIT_AREA_THERSHOLD;
-
-//	if (!glThrStream.empty())	tmpThr = glThrStream.read();
-
-	glRotateFlg = 0;
-	// The area threshold reached, rotate the slice index and clear the areaEventRegs.
-	if ( areaCountExceeded || (ts - currentTsHW) >= MAX_SLICE_DURATION_US )
-	{
-		glPLActiveSliceIdx--;
-		glRotateFlg = 1;
-
-        lastTsHW = currentTsHW;
-        currentTsHW = ts;
-
-        for(int r = 0; r < 1; r++)
-		{
-			std::cout << "Rotated successfully from HW!!!!" << std::endl;
-			std::cout << "x is: " << x << "\t y is: " << y << "\t idx is: " << glPLActiveSliceIdx << std::endl;
-			std::cout << "delataTsHW is: " << ((currentTsHW - lastTsHW) >> 9) << std::endl;
-		}
-
-
-		rotateSliceResetLoop:for(int areaX = 0; areaX < AREA_NUMBER; areaX++)
-		{
-#pragma HLS PIPELINE
-#pragma HLS INLINE off
-			for(int areaY = 0; areaY < AREA_NUMBER; areaY++)
-			{
-				areaEventRegs[areaX][areaY] = 0;
-			}
-		}
-
-//		   for (int16_t resetCnt = 0; resetCnt < 2048; resetCnt = resetCnt + 2)
-//		   {
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//		   }
-	}
-
-	xOutStream.write(x);
-	yOutStream.write(y);
-	idxStream.write(glPLActiveSliceIdx);
-	deltaTsHW = ((currentTsHW - lastTsHW) >> 9);
-	deltaTsHWBak = deltaTsHW;
-}
-
+/*
+ * This function duplicates the raw event stream to 3 channels at differnt scales.
+ * It is also responsible for rotating event slices.
+ * Input:
+ * xInStream, yInStream, tsInStream: raw event stream
+ * Output:
+ * xOutStream, yOutStream, idxStream: event stream and memory slice index stream for scale 0
+ * xOutStreamScale1, yOutStreamScale1, idxStreamScale1: event stream and memory slice index stream for scale 1
+ * xOutStreamScale2, yOutStreamScale2, idxStreamScale2: event stream and memory slice index stream for scale 2
+ */
 void rotateSliceAllScales(hls::stream<apUint10_t>  &xInStream, hls::stream<apUint10_t> &yInStream, hls::stream<uint32_t> &tsInStream,
 				 hls::stream<apUint10_t> &xOutStream, hls::stream<apUint10_t> &yOutStream, hls::stream<sliceIdx_t> &idxStream,
 				 hls::stream<apUint10_t> &xOutStreamScale1, hls::stream<apUint10_t> &yOutStreamScale1, hls::stream<sliceIdx_t> &idxStreamScale1,
@@ -1177,8 +980,6 @@ void rotateSliceAllScales(hls::stream<apUint10_t>  &xInStream, hls::stream<apUin
 //	}
 	glSFASTAreaCntThrBak = glSFASTAreaCntThr;  // store it in the shadow register for status output
 
-//	if (!glThrStream.empty())	tmpThr = glThrStream.read();
-
 	glRotateFlg = 0;
 	// The area threshold reached, rotate the slice index and clear the areaEventRegs.
 	if ( areaCountExceeded || (ts - currentTsHW) >= MAX_SLICE_DURATION_US )
@@ -1206,12 +1007,6 @@ void rotateSliceAllScales(hls::stream<apUint10_t>  &xInStream, hls::stream<apUin
 				areaEventRegs[areaX][areaY] = 0;
 			}
 		}
-
-//		   for (int16_t resetCnt = 0; resetCnt < 2048; resetCnt = resetCnt + 2)
-//		   {
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//		   }
 	}
 
 	uint16_t c = areaEventRegs[x/AREA_SIZE][y/AREA_SIZE];
@@ -1234,210 +1029,17 @@ void rotateSliceAllScales(hls::stream<apUint10_t>  &xInStream, hls::stream<apUin
 	deltaTsHWBak = deltaTsHW;
 }
 
-void rotateSliceAndWriteResetSlice(apUint10_t x, apUint10_t y, ap_uint<64> ts)
-{
-#pragma HLS RESOURCE variable=areaEventRegs core=RAM_2P_LUTRAM
-#pragma HLS ARRAY_PARTITION variable=areaEventRegs complete dim=2
-#pragma HLS INLINE
-
-//	glPLActiveSliceIdx--;
-
-	static uint16_t tmpThr = INIT_AREA_THERSHOLD;
-
-//	if (!glThrStream.empty())	tmpThr = glThrStream.read();
-
-	glRotateFlgBypass = 0;
-	// The area threshold reached, rotate the slice index and clear the areaEventRegs.
-	if ( areaCountExceeded || (ts - currentTsHW) >= MAX_SLICE_DURATION_US )
-	{
-		glPLActiveSliceIdx--;
-		glRotateFlgBypass = 1;
-
-#if DEBUG
-		/* This is only for C-simulation and debugging. */
-		if (oldIdx != glPLActiveSliceIdx)
-		{
-			oldIdx = glPLActiveSliceIdx;
-			// Check the accumulation slice is clear or not
-			for(int32_t xAddr = 0; xAddr < SLICE_WIDTH; xAddr++)
-			{
-				for(int32_t yAddr = 0; yAddr < SLICE_HEIGHT; yAddr = yAddr + COMBINED_PIXELS)
-				{
-					if (glPLSlices[glPLActiveSliceIdx][xAddr][yAddr/COMBINED_PIXELS] != 0)
-					{
-						for(int r = 0; r < 10; r++)
-						{
-							std::cout << "Ha! I caught you, the pixel which is not clear!" << std::endl;
-							std::cout << "x is: " << xAddr << "\t y is: " << yAddr << "\t idx is: " << glPLActiveSliceIdx << std::endl;
-						}
-					}
-				}
-			}
-		}
-
-
-		/* This is only for C-simulation and debugging. */
-		if (oldIdxScale1 != glPLActiveSliceIdx)
-		{
-			oldIdxScale1 = glPLActiveSliceIdx;
-			// Check the accumulation slice is clear or not
-			for(int32_t xAddr = 0; xAddr < SLICE_WIDTH/2; xAddr++)
-			{
-				for(int32_t yAddr = 0; yAddr < SLICE_HEIGHT/2; yAddr = yAddr + COMBINED_PIXELS)
-				{
-					if (glPLSlicesScale1[glPLActiveSliceIdx][xAddr][yAddr/COMBINED_PIXELS] != 0)
-					{
-						for(int r = 0; r < 10; r++)
-						{
-							std::cout << "Ha! I caught you, the pixel which is not clear!" << std::endl;
-							std::cout << "x is: " << xAddr << "\t y is: " << yAddr << "\t idx is: " << glPLActiveSliceIdx << std::endl;
-						}
-					}
-				}
-			}
-		}
-
-
-		/* This is only for C-simulation and debugging. */
-		if (oldIdxScale2 != glPLActiveSliceIdx)
-		{
-			oldIdxScale2 = glPLActiveSliceIdx;
-			// Check the accumulation slice is clear or not
-			for(int32_t xAddr = 0; xAddr < SLICE_WIDTH/4; xAddr++)
-			{
-				for(int32_t yAddr = 0; yAddr < SLICE_HEIGHT/4; yAddr = yAddr + COMBINED_PIXELS)
-				{
-					if (glPLSlicesScale2[glPLActiveSliceIdx][xAddr][yAddr/COMBINED_PIXELS] != 0)
-					{
-						for(int r = 0; r < 10; r++)
-						{
-							std::cout << "Ha! I caught you, the pixel which is not clear!" << std::endl;
-							std::cout << "x is: " << xAddr << "\t y is: " << yAddr << "\t idx is: " << glPLActiveSliceIdx << std::endl;
-						}
-					}
-				}
-			}
-		}
-
-#endif
-
-        lastTsHW = currentTsHW;
-        currentTsHW = ts;
-
-        for(int r = 0; r < 1; r++)
-		{
-			std::cout << "Rotated successfully from HW!!!!" << std::endl;
-			std::cout << "x is: " << x << "\t y is: " << y << "\t idx is: " << glPLActiveSliceIdx << std::endl;
-			std::cout << "delataTsHW is: " << ((currentTsHW - lastTsHW) >> 9) << std::endl;
-		}
-
-		rotateSliceResetLoop:for(int areaX = 0; areaX < AREA_NUMBER; areaX++)
-		{
-#pragma HLS PIPELINE
-#pragma HLS INLINE off
-			for(int areaY = 0; areaY < AREA_NUMBER; areaY++)
-			{
-				areaEventRegs[areaX][areaY] = 0;
-			}
-		}
-
-//		   for (int16_t resetCnt = 0; resetCnt < 2048; resetCnt = resetCnt + 2)
-//		   {
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//			   resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(glPLActiveSliceIdx + 3));
-//		   }
-	}
-
-	uint16_t c = areaEventRegs[x/AREA_SIZE][y/AREA_SIZE];
-	c = c + 1;
-	areaEventRegs[x/AREA_SIZE][y/AREA_SIZE] = c;
-    areaCountExceeded = (c >= tmpThr);
-
-    sliceIdx_t idx = glPLActiveSliceIdx;
-	if(idx == 0)
-	{
-
-		writePixScale0(x, y, 0);
-		writePixScale1(x, y, 0);
-		writePixScale2(x, y, 0);
-
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-	}
-	else if(idx == 1)
-	{
-
-		writePixScale0(x, y, 1);
-		writePixScale1(x, y, 1);
-		writePixScale2(x, y, 1);
-
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-	}
-	else if(idx == 2)
-	{
-		writePixScale0(x, y, 2);
-		writePixScale1(x, y, 2);
-		writePixScale2(x, y, 2);
-
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-	}
-	else
-	{
-		writePixScale0(x, y, 3);
-		writePixScale1(x, y, 3);
-		writePixScale2(x, y, 3);
-
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-		resetPixScale0(ap_uint<10>((resetCntScale0/(PIXS_PER_COL)) % (SLICE_WIDTH)), ap_uint<10>((resetCntScale0 % (PIXS_PER_COL)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-		resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-		resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-		resetCntScale0++;
-		resetCntScale1++;
-		resetCntScale2++;
-	}
-
-	deltaTsHW = ((currentTsHW - lastTsHW) >> 9);
-	deltaTsHWBak = deltaTsHW;
-}
-
-
+/*
+ * If the event is a corner (select == 1) , it goes for further processing.
+ * Otherwise it only do the simple evnet accumulation and reset the 'reset' slice.
+ * Input:
+ * select: control signal to indicate if this event requires OF processing
+ * xStream, yStream: input event stream
+ * idxStream: event slice index stream
+ * Output
+ * refStreamOutScale1: reference block data from scale 0 event slice
+ * tagStreamOutScale1: target block data from scale 0 event slice
+ */
 void rwSlicesScale0(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream,
 		  hls::stream< ap_int<8> > &xInitOffsetStream, hls::stream< ap_int<8> > &yInitOffsetStream,
 		  hls::stream<sliceIdx_t> &idxStream,
@@ -1462,13 +1064,9 @@ void rwSlicesScale0(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
 
 	int iterationCnt_i = 0, iterationCnt_k = 0;
 
-//	rwSlicesLoop:for(int32_t i = 0; i < eventIterSize; i++)
-//	{
 		rwSlicesInnerLoop:for(int16_t xOffSet = -1; xOffSet < BLOCK_SIZE_SCALE_0 + 2 * SEARCH_DISTANCE; xOffSet++)
 		{
 #pragma HLS PIPELINE rewind
-//			xRd = (xOffSet == 0)? (ap_uint<8>)(xStream.read()): xRd;
-//			yRd = (xOffSet == 0)? (ap_uint<8>)(yStream.read()): yRd;
 			if (xOffSet == -1)
 			{
 				xRd = xStream.read();
@@ -1570,7 +1168,6 @@ void rwSlicesScale0(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
 				tagSingleStreamOut << tagBlockCol;
 			}
 		}
-//	}
 
 #if DEBUG
 	printRegion: if(xRd == 290 && yRd == 134)
@@ -1606,14 +1203,19 @@ void rwSlicesScale0(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
 #endif
 
 
-//	resetLoop: for (int16_t resetCnt = 0; resetCnt < SLICE_HEIGHT * SLICE_WIDTH / COMBINED_PIXELS; resetCnt = resetCnt + 2)
-//	{
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//	}
-
 }
 
+/*
+ * If the event is a corner (select == 1) , it goes for further processing.
+ * Otherwise it only do the simple evnet accumulation and reset the 'reset' slice.
+ * Input:
+ * select: control signal to indicate if this event requires OF processing
+ * xStream, yStream: input event stream
+ * idxStream: event slice index stream
+ * Output
+ * refStreamOutScale1: reference block data from scale 1 event slice
+ * tagStreamOutScale1: target block data from scale 1 event slice
+ */
 void rwSlicesScale1(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream,
 		  hls::stream< ap_int<8> > &xInitOffsetStream, hls::stream< ap_int<8> > &yInitOffsetStream,
 		  hls::stream<sliceIdx_t> &idxStream,
@@ -1636,102 +1238,97 @@ void rwSlicesScale1(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
 	apIntBlockScale1Col_t refBlockCol;
 	apIntBlockScale1Col_t tagBlockCol;
 
-//	rwSlicesLoop:for(int32_t i = 0; i < eventIterSize; i++)
-//	{
-		rwSlicesInnerLoop:for(int16_t xOffSet = -1; xOffSet < BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE; xOffSet++)
-		{
+	rwSlicesInnerLoop:for(int16_t xOffSet = -1; xOffSet < BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE; xOffSet++)
+	{
 #pragma HLS PIPELINE rewind
-//			xRd = (xOffSet == 0)? (ap_uint<8>)(xStream.read()): xRd;
-//			yRd = (xOffSet == 0)? (ap_uint<8>)(yStream.read()): yRd;
-			if (xOffSet == -1)
-			{
-				xRd = xStream.read();
-				yRd = yStream.read();
-				idx = idxStream.read();
-				xInitOffset = xInitOffsetStream.read();
-				yInitOffset = yInitOffsetStream.read();
+		if (xOffSet == -1)
+		{
+			xRd = xStream.read();
+			yRd = yStream.read();
+			idx = idxStream.read();
+			xInitOffset = xInitOffsetStream.read();
+			yInitOffset = yInitOffsetStream.read();
 
 #if DEBUG
-				/* This is only for C-simulation and debugging. */
-				debugRegion:
-				{
-					for(int i = 0; i < BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE; i++)
-					{
-						readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + i, yRd/2 , xInitOffset, yInitOffset, idx + 1, idx + 2, out1Scale1_debug[i], out2Scale1_debug[i]);
-					}
-				}
-#endif
-			}
-			else
+			/* This is only for C-simulation and debugging. */
+			debugRegion:
 			{
-				if(idx == 0)
+				for(int i = 0; i < BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE; i++)
 				{
-					if(xOffSet == 0)
-					{
-						writePixScale1(xRd, yRd, 0);
-					}
-
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-					resetCntScale1++;
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-					resetCntScale1++;
-
-					readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 0 + 1, 0 + 2, out1Scale1, out2Scale1);
+					readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + i, yRd/2 , xInitOffset, yInitOffset, idx + 1, idx + 2, out1Scale1_debug[i], out2Scale1_debug[i]);
 				}
-				else if(idx == 1)
-				{
-					if(xOffSet == 0)
-					{
-						writePixScale1(xRd, yRd, 1);
-					}
-
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-					resetCntScale1++;
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-					resetCntScale1++;
-
-					readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 1 + 1, 1 + 2, out1Scale1, out2Scale1);
-				}
-				else if(idx == 2)
-				{
-					if(xOffSet == 0)
-					{
-						writePixScale1(xRd, yRd, 2);
-					}
-
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-					resetCntScale1++;
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-					resetCntScale1++;
-
-					readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 2 + 1, 2 + 2, out1Scale1, out2Scale1);
-				}
-				else
-				{
-					if(xOffSet == 0)
-					{
-						writePixScale1(xRd, yRd, 3);
-					}
-
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-					resetCntScale1++;
-					resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-					resetCntScale1++;
-
-					readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 3 + 1, 3 + 2, out1Scale1, out2Scale1);
-				}
-
-				for (int8_t l = 0; l < BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE; l++)
-				{
-					refBlockCol.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1Scale1[l];
-					tagBlockCol.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2Scale1[l];
-				}
-
-				refStreamOutScale1 << refBlockCol;
-				tagStreamOutScale1 << tagBlockCol;
 			}
+#endif
 		}
-//	}
+		else
+		{
+			if(idx == 0)
+			{
+				if(xOffSet == 0)
+				{
+					writePixScale1(xRd, yRd, 0);
+				}
+
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
+				resetCntScale1++;
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
+				resetCntScale1++;
+
+				readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 0 + 1, 0 + 2, out1Scale1, out2Scale1);
+			}
+			else if(idx == 1)
+			{
+				if(xOffSet == 0)
+				{
+					writePixScale1(xRd, yRd, 1);
+				}
+
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
+				resetCntScale1++;
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
+				resetCntScale1++;
+
+				readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 1 + 1, 1 + 2, out1Scale1, out2Scale1);
+			}
+			else if(idx == 2)
+			{
+				if(xOffSet == 0)
+				{
+					writePixScale1(xRd, yRd, 2);
+				}
+
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
+				resetCntScale1++;
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
+			resetCntScale1++;
+
+			readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 2 + 1, 2 + 2, out1Scale1, out2Scale1);
+		}
+		else
+		{
+			if(xOffSet == 0)
+			{
+				writePixScale1(xRd, yRd, 3);
+			}
+
+			resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
+				resetCntScale1++;
+				resetPixScale1(ap_uint<10>((resetCntScale1/(PIXS_PER_COL/2)) % (SLICE_WIDTH/2)), ap_uint<10>((resetCntScale1 % (PIXS_PER_COL/2)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
+				resetCntScale1++;
+
+				readBlockColsScale1(xRd/2 - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE + xOffSet, yRd/2 , xInitOffset, yInitOffset, 3 + 1, 3 + 2, out1Scale1, out2Scale1);
+			}
+
+			for (int8_t l = 0; l < BLOCK_SIZE_SCALE_1 + 2 * SEARCH_DISTANCE; l++)
+			{
+				refBlockCol.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1Scale1[l];
+				tagBlockCol.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2Scale1[l];
+			}
+
+			refStreamOutScale1 << refBlockCol;
+			tagStreamOutScale1 << tagBlockCol;
+		}
+	}
 
 #if DEBUG
 	printRegion: if(xRd == 290 && yRd == 134)
@@ -1766,15 +1363,17 @@ void rwSlicesScale1(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
 	}
 #endif
 
-
-//	resetLoop: for (int16_t resetCnt = 0; resetCnt < SLICE_HEIGHT * SLICE_WIDTH / COMBINED_PIXELS; resetCnt = resetCnt + 2)
-//	{
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//	}
-
 }
 
+/*
+ * Input:
+ * select: control signal to indicate if this event requires OF processing
+ * xStream, yStream: input event stream
+ * idxStream: event slice index stream
+ * Output
+ * refStreamOutScale2: reference block data from scale 2 event slice
+ * tagStreamOutScale2: target block data from scale 2 event slice
+ */
 void rwSlicesScale2(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream, hls::stream<sliceIdx_t> &idxStream,
 			  hls::stream<apIntBlockScale2Col_t> &refStreamOutScale2, hls::stream<apIntBlockScale2Col_t> &tagStreamOutScale2)
 {
@@ -1791,106 +1390,101 @@ void rwSlicesScale2(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
     pix_t out1Scale2[BLOCK_SIZE_SCALE_2+ 2 * SEARCH_DISTANCE];
     pix_t out2Scale2[BLOCK_SIZE_SCALE_2+ 2 * SEARCH_DISTANCE];
 
-//	rwSlicesLoop:for(int32_t i = 0; i < eventIterSize; i++)
-//	{
-		rwSlicesInnerLoop:for(int16_t xOffSet = -1; xOffSet < BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE; xOffSet++)
-		{
+	rwSlicesInnerLoop:for(int16_t xOffSet = -1; xOffSet < BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE; xOffSet++)
+	{
 #pragma HLS PIPELINE rewind
-//			xRd = (xOffSet == 0)? (ap_uint<8>)(xStream.read()): xRd;
-//			yRd = (xOffSet == 0)? (ap_uint<8>)(yStream.read()): yRd;
-			if (xOffSet == -1)
-			{
-				xRd = xStream.read();
-				yRd = yStream.read();
-				idx = idxStream.read();
+		if (xOffSet == -1)
+		{
+			xRd = xStream.read();
+			yRd = yStream.read();
+			idx = idxStream.read();
 
 #if DEBUG
-				/* This is only for C-simulation and debugging. */
-				debugRegion:
+			/* This is only for C-simulation and debugging. */
+			debugRegion:
+			{
+				for(int i = 0; i < BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE; i++)
 				{
-					for(int i = 0; i < BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE; i++)
-					{
-						readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + i, yRd/4 , 0, 0, idx + 1, idx + 2, out1Scale2_debug[i], out2Scale2_debug[i]);
-					}
+					readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + i, yRd/4 , 0, 0, idx + 1, idx + 2, out1Scale2_debug[i], out2Scale2_debug[i]);
 				}
+			}
 #endif
+		}
+		else
+		{
+			if(idx == 0)
+			{
+				if(xOffSet == 0)
+				{
+					writePixScale2(xRd, yRd, 0);
+				}
+
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
+				resetCntScale2++;
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
+				resetCntScale2++;
+
+				readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 0 + 1, 0 + 2, out1Scale2, out2Scale2);
+			}
+			else if(idx == 1)
+			{
+				if(xOffSet == 0)
+				{
+					writePixScale2(xRd, yRd, 1);
+				}
+
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
+				resetCntScale2++;
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
+				resetCntScale2++;
+
+				readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 1 + 1, 1 + 2, out1Scale2, out2Scale2);
+			}
+			else if(idx == 2)
+			{
+				if(xOffSet == 0)
+				{
+					writePixScale2(xRd, yRd, 2);
+				}
+
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
+				resetCntScale2++;
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
+				resetCntScale2++;
+
+				readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 2 + 1, 2 + 2, out1Scale2, out2Scale2);
 			}
 			else
 			{
-				if(idx == 0)
+				if(xOffSet == 0)
 				{
-					if(xOffSet == 0)
-					{
-						writePixScale2(xRd, yRd, 0);
-					}
-
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-					resetCntScale2++;
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(0 + 3));
-					resetCntScale2++;
-
-					readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 0 + 1, 0 + 2, out1Scale2, out2Scale2);
-				}
-				else if(idx == 1)
-				{
-					if(xOffSet == 0)
-					{
-						writePixScale2(xRd, yRd, 1);
-					}
-
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-					resetCntScale2++;
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(1 + 3));
-					resetCntScale2++;
-
-					readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 1 + 1, 1 + 2, out1Scale2, out2Scale2);
-				}
-				else if(idx == 2)
-				{
-					if(xOffSet == 0)
-					{
-						writePixScale2(xRd, yRd, 2);
-					}
-
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-					resetCntScale2++;
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(2 + 3));
-					resetCntScale2++;
-
-					readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 2 + 1, 2 + 2, out1Scale2, out2Scale2);
-				}
-				else
-				{
-					if(xOffSet == 0)
-					{
-						writePixScale2(xRd, yRd, 3);
-					}
-
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-					resetCntScale2++;
-					resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
-					resetCntScale2++;
-
-					readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 3 + 1, 3 + 2, out1Scale2, out2Scale2);
+					writePixScale2(xRd, yRd, 3);
 				}
 
-				apIntBlockScale2Col_t refBlockColScale2;
-				apIntBlockScale2Col_t tagBlockColScale2;
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
+				resetCntScale2++;
+				resetPixScale2(ap_uint<10>((resetCntScale2/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCntScale2 % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(3 + 3));
+				resetCntScale2++;
 
-				for (int8_t l = 0; l < BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE; l++)
-				{
-					refBlockColScale2.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1Scale2[l];
-					tagBlockColScale2.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2Scale2[l];
-				}
-
-				if (xOffSet >= SEARCH_DISTANCE && xOffSet < SEARCH_DISTANCE + BLOCK_SIZE_SCALE_2)
-				{
-					refStreamOutScale2 <<  refBlockColScale2;
-				}
-				tagStreamOutScale2 << tagBlockColScale2;
+				readBlockColsScale2(xRd/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE + xOffSet, yRd/4 , 0, 0, 3 + 1, 3 + 2, out1Scale2, out2Scale2);
 			}
+
+			apIntBlockScale2Col_t refBlockColScale2;
+			apIntBlockScale2Col_t tagBlockColScale2;
+
+			for (int8_t l = 0; l < BLOCK_SIZE_SCALE_2 + 2 * SEARCH_DISTANCE; l++)
+			{
+				refBlockColScale2.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1Scale2[l];
+				tagBlockColScale2.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2Scale2[l];
+			}
+
+			if (xOffSet >= SEARCH_DISTANCE && xOffSet < SEARCH_DISTANCE + BLOCK_SIZE_SCALE_2)
+			{
+				refStreamOutScale2 <<  refBlockColScale2;
+			}
+			tagStreamOutScale2 << tagBlockColScale2;
 		}
-//	}
+	}
 #if DEBUG
 	printRegion: if(xRd == 290 && yRd == 134)
 	{
@@ -1925,15 +1519,14 @@ void rwSlicesScale2(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &y
 	}
 #endif
 
-
-//	resetLoop: for (int16_t resetCnt = 0; resetCnt < SLICE_HEIGHT * SLICE_WIDTH / COMBINED_PIXELS; resetCnt = resetCnt + 2)
-//	{
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//	}
-
 }
 
+/**
+ * Re-order the stream read from the event slices directly to a fixed order for later PEs.
+ * Because there might be NPC units process the column at the same time, 
+ * the stream requires to be re-ordered.
+ * For scale 0.
+ */
 void reOrderStreamScale0(hls::stream<apIntBlockScale0Col_t> &refSingleStreamOut,
 		hls::stream<apIntBlockScale0Col_t> &tagSingleStreamOut,
 		hls::stream<apIntBlockScale0ColNPC_t> &refNPCStreamOut,
@@ -2027,6 +1620,12 @@ void reOrderStreamScale0(hls::stream<apIntBlockScale0Col_t> &refSingleStreamOut,
 	}
 }
 
+/**
+ * Re-order the stream read from the event slices directly to a fixed order for later PEs.
+ * Because there might be NPC units process the column at the same time, 
+ * the stream requires to be re-ordered.
+ * For scale 1.
+ */
 void reOrderStreamScale1(hls::stream<apIntBlockScale1Col_t> &refSingleStreamOut,
 		hls::stream<apIntBlockScale1Col_t> &tagSingleStreamOut,
 		hls::stream<apIntBlockScale1ColNPC_t> &refNPCStreamOut,
@@ -2122,7 +1721,17 @@ void reOrderStreamScale1(hls::stream<apIntBlockScale1Col_t> &refSingleStreamOut,
 }
 
 
-// Function description: reorder the column stream read directly from the memory slices.
+/**
+ * Column SAD calculation function on scale 0.
+ * Input：
+ * select: control signal to indicate if skipping this module
+ * colStream0, colStream1: input column streams from reference block slice and target block slice
+ * Output:
+ * outStream: SAD for the whole column and save in a wide data
+ * refZeroCntStream: the number of zero in the reference column
+ * tagColValidCntStream: the number of valid pixel in the target column
+ * refTagValidCntStream: the number of valid pixel in both the reference and the target column
+ */
 void colStreamToColSumScale0(hls::stream<apIntBlockScale0ColNPC_t> &colStream0, hls::stream<apIntBlockScale0ColNPC_t> &colStream1,
 		hls::stream<apUintColSumNPC_t> &outStream, hls::stream< apUintRefZeroCntNPC_t > &refZeroCntStream,
 		hls::stream<apUintValidCntNPC_t> &tagColValidCntStream,
@@ -2209,7 +1818,17 @@ void colStreamToColSumScale0(hls::stream<apIntBlockScale0ColNPC_t> &colStream0, 
 	}
 }
 
-// Function description: reorder the column stream read directly from the memory slices.
+/**
+ * Column SAD calculation function on scale 1.
+ * Input：
+ * select: control signal to indicate if skipping this module
+ * colStream0, colStream1: input column streams from reference block slice and target block slice
+ * Output:
+ * outStream: SAD for the whole column and save in a wide data
+ * refZeroCntStream: the number of zero in the reference column
+ * tagColValidCntStream: the number of valid pixel in the target column
+ * refTagValidCntStream: the number of valid pixel in both the reference and the target column
+ */
 void colStreamToColSumScale1(hls::stream<apIntBlockScale1ColNPC_t> &colStream0, hls::stream<apIntBlockScale1ColNPC_t> &colStream1,
 		hls::stream<apUintColSumScale1NPC_t> &outStream, hls::stream< apUintRefZeroCntScale1NPC_t > &refZeroCntStream,
 		hls::stream<apUintValidCntScale1NPC_t> &tagColValidCntStream,
@@ -2296,7 +1915,17 @@ void colStreamToColSumScale1(hls::stream<apIntBlockScale1ColNPC_t> &colStream0, 
 	}
 }
 
-// Function description: reorder the column stream read directly from the memory slices.
+/**
+ * Column SAD calculation function on scale 2.
+ * Input：
+ * select: control signal to indicate if skipping this module
+ * colStream0, colStream1: input column streams from reference block slice and target block slice
+ * Output:
+ * outStream: SAD for the whole column and save in a wide data
+ * refZeroCntStream: the number of zero in the reference column
+ * tagColValidCntStream: the number of valid pixel in the target column
+ * refTagValidCntStream: the number of valid pixel in both the reference and the target column
+ */
 void colStreamToColSumScale2(hls::stream<apIntBlockScale2Col_t> &colStream0, hls::stream<apIntBlockScale2Col_t> &colStream1,
 		hls::stream<apUint112_t> &outStream, hls::stream<apUint6_t> &refZeroCntStream,
 		hls::stream<apUint42_t> &tagColValidCntStream,
@@ -2371,6 +2000,14 @@ ap_uint< 9 * (2 * SEARCH_DISTANCE + 1) > lastTagColValidCntSumData;
 ap_uint< 9 * (2 * SEARCH_DISTANCE + 1) > lastrefTagValidCntSumData;
 uint16_t lastSumRefZeroCnt;
 // TODO: continue to optimize this function.
+/**
+ * Accumulate column SAD in the row order to get the block SAD.
+ * For scale 0.
+ * Input:
+ * inStream: input column SAD stream
+ * outStram: block SAD stream
+ * OF_yStream: the OF on the row (y) direction.
+ */
 void accumulateStreamScale0(hls::stream<apUintColSumNPC_t> &inStream, hls::stream<int16_t> &outStream, hls::stream<int8_t> &OF_yStream,
 		hls::stream<apUintRefZeroCntNPC_t> &refZeroCntStream,
 		hls::stream<apUintValidCntNPC_t> &tagColValidCntStream,
@@ -2494,6 +2131,14 @@ ap_uint< 9 * (2 * SEARCH_DISTANCE + 1) > lastTagColValidCntSumDataScale1;
 ap_uint< 9 * (2 * SEARCH_DISTANCE + 1) > lastrefTagValidCntSumDataScale1;
 uint16_t lastSumRefZeroCntScale1;
 // TODO: continue to optimize this function.
+/**
+ * Accumulate column SAD in the row order to get the block SAD.
+ * For scale 1.
+ * Input:
+ * inStream: input column SAD stream
+ * outStram: block SAD stream
+ * OF_yStream: the OF on the row (y) direction.
+ */
 void accumulateStreamScale1(hls::stream<apUintColSumScale1NPC_t> &inStream, hls::stream<int16_t> &outStream, hls::stream<int8_t> &OF_yStream,
 		hls::stream<apUintRefZeroCntScale1NPC_t> &refZeroCntStream,
 		hls::stream<apUintValidCntScale1NPC_t> &tagColValidCntStream,
@@ -2617,6 +2262,14 @@ static ap_uint< 9 * (2 * SEARCH_DISTANCE + 1) > lastTagColValidCntSumDataScale2;
 static ap_uint< 9 * (2 * SEARCH_DISTANCE + 1) > lastrefTagValidCntSumDataScale2;
 static uint16_t lastSumRefZeroCntScale2;
 // TODO: continue to optimize this function.
+/**
+ * Accumulate column SAD in the row order to get the block SAD.
+ * For scale 2.
+ * Input:
+ * inStream: input column SAD stream
+ * outStram: block SAD stream
+ * OF_yStream: the OF on the row (y) direction.
+ */
 void accumulateStreamScale2(hls::stream<apUint112_t> &inStream, hls::stream<int16_t> &outStream, hls::stream<int8_t> &OF_yStream,
 		hls::stream<apUint6_t> &refZeroCntStream,
 		hls::stream<apUint42_t> &tagColValidCntStream,
@@ -2717,8 +2370,15 @@ void accumulateStreamScale2(hls::stream<apUint112_t> &inStream, hls::stream<int1
 
 }
 
-
-
+/**
+ * Get the minimum block SAD. For scale 0.
+ * Input:
+ * inStream: all the block SAD in the search area.
+ * OF_yStream: all the y component of OF
+ * Output:
+ * minStream: the minimum SAD value stream
+ * OFstream: the corresponding OF valuse stream
+ */
 static apUint15_t currentMin = 0x7fff;
 void findStreamMinScale0(hls::stream<int16_t> &inStream, hls::stream<int8_t> &OF_yStream,
 		hls::stream<apUint15_t> &minStream,  hls::stream<apUint6_t> &OFStream)
@@ -2755,6 +2415,15 @@ void findStreamMinScale0(hls::stream<int16_t> &inStream, hls::stream<int8_t> &OF
 }
 
 
+/**
+ * Get the minimum block SAD. For scale 1.
+ * Input:
+ * inStream: all the block SAD in the search area.
+ * OF_yStream: all the y component of OF
+ * Output:
+ * minStream: the minimum SAD value stream
+ * OFstream: the corresponding OF valuse stream
+ */
 static apUint15_t currentMinScale1 = 0x7fff;
 void findStreamMinScale1(hls::stream<int16_t> &inStream, hls::stream<int8_t> &OF_yStream,
 		hls::stream<apUint15_t> &minStream,  hls::stream<apUint6_t> &OFStream)
@@ -2790,6 +2459,15 @@ void findStreamMinScale1(hls::stream<int16_t> &inStream, hls::stream<int8_t> &OF
 	}
 }
 
+/**
+ * Get the minimum block SAD. For scale 2.
+ * Input:
+ * inStream: all the block SAD in the search area.
+ * OF_yStream: all the y component of OF
+ * Output:
+ * minStream: the minimum SAD value stream
+ * OFstream: the corresponding OF valuse stream
+ */
 static apUint15_t currentMinScale2 = 0x7fff;
 void findStreamMinScale2(hls::stream<int16_t> &inStream, hls::stream<int8_t> &OF_yStream,
 		hls::stream<apUint15_t> &minStream,  hls::stream<apUint6_t> &OFStream)
@@ -2828,6 +2506,9 @@ void findStreamMinScale2(hls::stream<int16_t> &inStream, hls::stream<int8_t> &OF
 
 static uint16_t OFRetRegs[8][8]; // Increase the size to power of 2 to save some resources.
 
+/**
+ * Determine if the area event nubmer should be changed based on the threshold.
+ */
 void feedback(apUint15_t miniSumRet, apUint6_t OFRet, apUint1_t rotateFlg, uint16_t *thrRet)
 {
 #pragma HLS RESOURCE variable=OFRetRegs core=RAM_2P_LUTRAM
@@ -2960,142 +2641,20 @@ void feedbackWithoutOFHist(apUint16_t miniSumRet, apUint16_t OFRet, apUint1_t ro
 }
 
 
-void feedbackWrapperAndOutputResult(hls::stream<apUint15_t> &miniSumStreamScale0, hls::stream<apUint6_t> &OFRetStreamScale0,
-		hls::stream<apUint15_t> &miniSumStreamScale1, hls::stream<apUint6_t> &OFRetStreamScale1,
-		hls::stream<apUint15_t> &miniSumStreamScale2, hls::stream<apUint6_t> &OFRetStreamScale2,
-						hls::stream<apUint17_t> &packetEventDataStream,
-					 hls::stream<uint16_t> &thrStream, int32_t *eventSlice)
-{
-	apUint17_t tmp1 = packetEventDataStream.read();
-
-	apUint15_t tmpMiniSumRetScale0 = miniSumStreamScale0.read();
-	apUint6_t tmpOFScale0 = OFRetStreamScale0.read();
-
-	apUint15_t tmpMiniSumRetScale1 = miniSumStreamScale1.read();
-	apUint6_t tmpOFScale1 = OFRetStreamScale1.read();
-
-	apUint15_t tmpMiniSumRetScale2 = miniSumStreamScale2.read();
-	apUint6_t tmpOFScale2 = OFRetStreamScale2.read();
-
-	ap_int<16> miniRet;
-	ap_uint<6> OFRet;
-	ap_uint<2> scaleRet;
-
-    if(tmpOFScale0 != 0x3f) tmpMiniSumRetScale0 = (tmpMiniSumRetScale0 << 4);
-    if(tmpOFScale1 != 0x3f) tmpMiniSumRetScale1 = (tmpMiniSumRetScale1 << 2);
-    miniRet = tmpMiniSumRetScale2;
-    OFRet = tmpOFScale2;
-    scaleRet = 2;
-    if(tmpMiniSumRetScale1 < miniRet)
-    {
-        miniRet = tmpMiniSumRetScale1;
-        OFRet = tmpOFScale1;
-        scaleRet = 1;
-    }
-    if(tmpMiniSumRetScale0 < miniRet)
-    {
-        miniRet = tmpMiniSumRetScale0;
-        OFRet = tmpOFScale0;
-        scaleRet = 0;
-    }
-
-//	apUint1_t tmpFlg = rotateFlgStream.read();
-
-	uint16_t tmpThr;
-
-	ap_int<9> tmp2 = miniRet.range(8, 0);
-	apUint6_t tmpOF = OFRet;
-
-	feedback(miniRet, tmpOF, glRotateFlg, &tmpThr);
-
-	if(glRotateFlg)
-	{
-		thrStream.write(tmpThr);
-	}
-
-	ap_uint<32> output = (deltaTsHW, (tmpOF, tmp1));
-//		std :: cout << "tmp1 is "  << std::hex << tmp1 << std :: endl;
-//		std :: cout << "tmp2 is "  << std::hex << tmp2 << std :: endl;
-//		std :: cout << "output is "  << std::hex << output << std :: endl;
-//		std :: cout << "eventSlice is "  << std::hex << output.to_int() << std :: endl;
-	*eventSlice++ = output.to_int();
-}
-
-void outputResult(hls::stream<apUint15_t> &miniSumStream, hls::stream<apUint6_t> &OFRetStream,  hls::stream<apUint17_t> &packetEventDataStream, int32_t *eventSlice)
-{
-//	outputLoop: for(int32_t i = 0; i < eventIterSize; i++)
-//	{
-		apUint17_t tmp1 = packetEventDataStream.read();
-		apUint15_t miniSumRet = miniSumStream.read();
-		ap_int<9> tmp2 = miniSumRet.range(8, 0);
-		apUint6_t tmpOF = OFRetStream.read();
-
-		ap_uint<32> output = (tmp2, (tmpOF, tmp1));
-//		std :: cout << "tmp1 is "  << std::hex << tmp1 << std :: endl;
-//		std :: cout << "tmp2 is "  << std::hex << tmp2 << std :: endl;
-//		std :: cout << "output is "  << std::hex << output << std :: endl;
-//		std :: cout << "eventSlice is "  << std::hex << output.to_int() << std :: endl;
-		*eventSlice++ = output.to_int();
-
-//	}
-}
-
-
 /*
  * Following modules are for chip directly on board.
  */
-void truncateStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn, hls::stream< ap_uint<1> > &polStreamIn, hls::stream< ap_uint<64> > &tsStreamIn,
-		hls::stream< apUint10_t > &xStreamOut, hls::stream< apUint10_t > &yStreamOut, hls::stream< uint32_t > &tsStreamOut, hls::stream< ap_uint<96> > &packetEventDataStream)
-{
-#pragma HLS PIPELINE
-	ap_uint<16> x;
-	ap_uint<16> y;
-	ap_uint<64> ts;
-	ap_uint<1> pol;
 
-	xStreamIn >> x;
-	yStreamIn >> y;
-	tsStreamIn >> ts;
-	polStreamIn >> pol;
-
-	ap_uint<96> tmpOutput;
-	tmpOutput[32] = ap_uint<1>(pol);
-	tmpOutput.range(31, 16) = y;
-	tmpOutput.range(15, 0) = x;
-	tmpOutput.range(95, 33) = ts.range(62, 0);
-	packetEventDataStream << tmpOutput;
-
-	xStreamOut << (apUint10_t)x;
-	yStreamOut << (apUint10_t)y;
-	tsStreamOut << (uint32_t)ts;
-}
-
-void truncateScale(ap_uint<16> xIn, ap_uint<16> yIn, ap_uint<64> tsIn, ap_uint<1> polIn,
-		hls::stream< apUint10_t > &xStreamOut, hls::stream< apUint10_t > &yStreamOut, hls::stream< uint32_t > &tsStreamOut, hls::stream< ap_uint<96> > &packetEventDataStream)
-{
-#pragma HLS PIPELINE
-	ap_uint<16> x;
-	ap_uint<16> y;
-	ap_uint<64> ts;
-	ap_uint<1> pol;
-
-	x = xIn;
-	y = yIn;
-	ts = tsIn;
-	pol = polIn;
-
-	ap_uint<96> tmpOutput;
-	tmpOutput[32] = ap_uint<1>(pol);
-	tmpOutput.range(31, 16) = y;
-	tmpOutput.range(15, 0) = x;
-	tmpOutput.range(95, 33) = ts.range(62, 0);
-	packetEventDataStream << tmpOutput;
-
-	xStreamOut << (apUint10_t)x;
-	yStreamOut << (apUint10_t)y;
-	tsStreamOut << (uint32_t)ts;
-}
-
+/**
+ * This function is the pre-processing module.
+ * Input:
+ * xStreamIn, yStreamIn, polStreamIn, tsStreamIn: raw event stream
+ * controlStreamIn: indicate if the current event is a corner
+ * Output:
+ * xStreamOut, yStreamOut, tsStreamOut: output from input directly
+ * packetEventDataStream: packet x, y, ts and polarity into one data
+ * select: FIFO interface of the control signal
+ */
 void truncateStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn,
 		hls::stream< ap_uint<1> > &polStreamIn, hls::stream< ap_uint<64> > &tsStreamIn,
 		hls::stream< ap_uint<1> > &controlStreamIn,
@@ -3130,6 +2689,20 @@ void truncateStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::strea
 }
 
 
+/**
+ * This function is used to calculate the feedback event count number and send the final packet data.
+ * Input:
+ * packetEventDataStream: packet data that contains the input event information
+ * miniSumStreamStreamScale0: the SAD minimum on scale 0
+ * OFRetStreamScale0: OF result on scale 0
+ * miniSumStreamStreamScale1: the SAD minimum on scale 1
+ * OFRetStreamScale1: OF result on scale 1
+ * miniSumStreamStreamScale2: the SAD minimum on scale 2
+ * OFRetStreamScale2: OF result on scale 2
+ * Output:
+ * xStreamOut, yStreamOut, polStreamOut, tsStreamOut: raw event stream output
+ * custDataStreamOut: output packaging data including final OF result and SAD minimum
+ */
 void feedbackAndCombineOutputStream(hls::stream< ap_uint<96> > &packetEventDataStream,
 						hls::stream<apUint15_t> &miniSumStreamScale0, hls::stream<apUint6_t> &OFRetStreamScale0,
 						hls::stream<apUint15_t> &miniSumStreamScale1, hls::stream<apUint6_t> &OFRetStreamScale1,
@@ -3236,17 +2809,9 @@ void feedbackAndCombineOutputStream(hls::stream< ap_uint<96> > &packetEventDataS
 
 	feedbackWithoutOFHist(miniRet, OFRet, glRotateFlg, &tmpThr);
 	ap_uint<17> custData;
-	if(glRotateFlg)
-	{
-//		glThrStream.write(tmpThr);
-	}
 
 	ap_int<8> xOFRet = ap_int<8>(OFRet.range(7, 0));
 	ap_int<8> yOFRet = ap_int<8>(OFRet.range(15, 8));
-
-//	custData.range(4, 0) = xOFRet;
-//	custData.range(9, 5) = yOFRet;
-//	custData[10] = glRotateFlg;
 
 	// Using compressed data so we can represent more OF results
 	ap_uint<16> compressedRetData = (xOFRet + MAX_SEARCH_DIST_RADIUS) * (2 * MAX_SEARCH_DIST_RADIUS + 1) + (yOFRet + MAX_SEARCH_DIST_RADIUS);
@@ -3268,130 +2833,10 @@ void feedbackAndCombineOutputStream(hls::stream< ap_uint<96> > &packetEventDataS
 	custDataStreamOut << custData;
 }
 
-void feedbackAndCombineOutputScale(hls::stream< ap_uint<96> > &packetEventDataStream,
-						hls::stream<apUint15_t> &miniSumStreamScale0, hls::stream<apUint6_t> &OFRetStreamScale0,
-						hls::stream<apUint15_t> &miniSumStreamScale1, hls::stream<apUint6_t> &OFRetStreamScale1,
-						hls::stream<apUint15_t> &miniSumStreamScale2, hls::stream<apUint6_t> &OFRetStreamScale2,
-						ap_uint<16> *xOut, ap_uint<16> *yOut, ap_uint<64> *tsOut, ap_uint<1> *polOut,
-						apUint17_t *pixelDataOut)
-{
-//#pragma HLS PIPELINE
-	ap_uint<96> tmpOutput;
-	packetEventDataStream >> tmpOutput;
-	ap_uint<16> x;
-	ap_uint<16> y;
-	ap_uint<64> ts;
-	ap_uint<1> pol;
-
-	y = tmpOutput.range(31, 16);
-	x = tmpOutput.range(15, 0);
-	pol = tmpOutput[32];
-	ts.range(62, 0) = tmpOutput.range(95, 33);
-
-	apUint15_t tmpMiniSumRetScale0 = miniSumStreamScale0.read();
-	apUint6_t tmpOFScale0 = OFRetStreamScale0.read();
-
-	apUint15_t tmpMiniSumRetScale1 = miniSumStreamScale1.read();
-	apUint6_t tmpOFScale1 = OFRetStreamScale1.read();
-
-	apUint15_t tmpMiniSumRetScale2 = miniSumStreamScale2.read();
-	apUint6_t tmpOFScale2 = OFRetStreamScale2.read();
-
-#if DEBUG
-	printRegion: if(x == 106 && y == 75)
-	{
-		std::cout << "tmpMiniSumRetScale0 is: " << tmpMiniSumRetScale0 << "\t tmpOFScale0 is: " << std::hex << tmpOFScale0 << std::endl;
-		std::cout << "tmpMiniSumRetScale1 is: " << std::dec << tmpMiniSumRetScale1 << "\t tmpOFScale1 is: " << std::hex << tmpOFScale1 << std::endl;
-		std::cout << "tmpMiniSumRetScale2 is: " << std::dec << tmpMiniSumRetScale2 << "\t tmpOFScale2 is: " << std::hex << tmpOFScale2 << std::endl;
-		std::cout << std::dec;    // Restore dec mode
-	}
-#endif
-
-    ap_int<8> xInitOffsetScale1 = ap_int<8>(tmpOFScale2.range(2,0) - 3) << 1;
-    ap_int<8> yInitOffsetScale1 = ap_int<8>(tmpOFScale2.range(5,3) - 3) << 1;
-    ap_int<8> xInitOffsetScale0 = (ap_int<8>(tmpOFScale1.range(2,0) - 3) << 1) + (xInitOffsetScale1 << 1);
-    ap_int<8> yInitOffsetScale0 = (ap_int<8>(tmpOFScale1.range(5,3) - 3) << 1) + (yInitOffsetScale1 << 1);
-
-    if (x/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE < 0 || x/4 + BLOCK_SIZE_SCALE_2/2 + SEARCH_DISTANCE >= DVS_WIDTH/4
-            || y/4 - BLOCK_SIZE_SCALE_2/2 - SEARCH_DISTANCE < 0 || y/4 + BLOCK_SIZE_SCALE_2/2 + SEARCH_DISTANCE >= DVS_HEIGHT/4) {
-    	tmpMiniSumRetScale2 = 0x7fff;
-    	tmpOFScale2 = 0x3f;
-    }
-
-    if ((x/2 + xInitOffsetScale1) - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE < 0 || (x/2 + xInitOffsetScale1) + BLOCK_SIZE_SCALE_1/2 + SEARCH_DISTANCE >= DVS_WIDTH/2
-            ||(y/2 + yInitOffsetScale1) - BLOCK_SIZE_SCALE_1/2 - SEARCH_DISTANCE < 0 || (y/2 + yInitOffsetScale1) + BLOCK_SIZE_SCALE_1/2 + SEARCH_DISTANCE >= DVS_HEIGHT/2) {
-    	tmpMiniSumRetScale1 = 0x7fff;
-    	tmpOFScale1 = 0x3f;
-    }
-    if ((x/1 + xInitOffsetScale0) - BLOCK_SIZE_SCALE_0/2 - SEARCH_DISTANCE < 0 || (x/1 + xInitOffsetScale0) + BLOCK_SIZE_SCALE_0/2 + SEARCH_DISTANCE >= DVS_WIDTH/1
-            || (y/1 + yInitOffsetScale0) - BLOCK_SIZE_SCALE_0/2 - SEARCH_DISTANCE < 0 || (y/1 + yInitOffsetScale0) + BLOCK_SIZE_SCALE_0/2 + SEARCH_DISTANCE >= DVS_HEIGHT/1) {
-    	tmpMiniSumRetScale0 = 0x7fff;
-    	tmpOFScale0 = 0x3f;
-    }
-
-	ap_int<16> miniRet;
-	ap_uint<16> OFRet;
-	ap_uint<2> scaleRet;
-
-    // If the result is valid, then result scale is 0. Otherwise, set scaleRet 3.
-    if( tmpMiniSumRetScale2 >= maxAllowedSadValueScale2
-    		|| tmpMiniSumRetScale1 >= maxAllowedSadValueScale1
-			|| tmpMiniSumRetScale0 >= maxAllowedSadValueScale0 )
-    {
-    	// invalid result
-    	miniRet = 0x7fff;
-    	OFRet = 0x7f7f;
-    	scaleRet = 3;
-    }
-    else
-    {
-        ap_int<8> xOFRetScale2 = ap_int<8>(tmpOFScale2.range(2,0)) - 3;
-        ap_int<8> yOFRetScale2 = ap_int<8>(tmpOFScale2.range(5,3)) - 3;
-        ap_int<8> xOFRetScale1 = ap_int<8>(tmpOFScale1.range(2,0)) - 3;
-        ap_int<8> yOFRetScale1 = ap_int<8>(tmpOFScale1.range(5,3)) - 3;
-        ap_int<8> xOFRetScale0 = ap_int<8>(tmpOFScale0.range(2,0)) - 3;
-        ap_int<8> yOFRetScale0 = ap_int<8>(tmpOFScale0.range(5,3)) - 3;
-
-        ap_int<8> xOFTmpRet = (xOFRetScale2 * 4) + (xOFRetScale1 * 2) + xOFRetScale0;
-        ap_int<8> yOFTmpRet = (yOFRetScale2 * 4) + (yOFRetScale1 * 2) + yOFRetScale0;
-
-        OFRet.range(7, 0) = ap_uint<8>(xOFTmpRet);
-        OFRet.range(15, 8) = ap_uint<8>(yOFTmpRet);
-
-        miniRet = tmpMiniSumRetScale0;
-        scaleRet = 0;
-    }
-
-
-//	apUint1_t tmpFlg = rotateFlgStream.read();
-
-	uint16_t tmpThr;
-
-	ap_int<9> tmp2 = miniRet.range(8, 0);
-	apUint6_t tmpOF = OFRet;
-
-	feedback(miniRet, tmpOF, glRotateFlg, &tmpThr);
-
-	ap_uint<17> custData;
-	if(glRotateFlg)
-	{
-//		glThrStream.write(tmpThr);
-	}
-
-	ap_int<8> xOFRet = ap_int<8>(OFRet.range(7, 0));
-	ap_int<8> yOFRet = ap_int<8>(OFRet.range(15, 8));
-
-	custData.range(7, 0) = xOFRet;
-	custData.range(15, 8) = yOFRet;
-	custData[16] = glRotateFlg;
-
-	*xOut = x;
-	*yOut = y;
-	*polOut = pol;
-	*tsOut = ts;
-	*pixelDataOut = custData;
-}
-
+/*
+ * If the event is a corner (select == 1) , it goes for further processing.
+ * Otherwise it only do the simple evnet accumulation and reset the 'reset' slice.
+ */
 void rwSlicesScale0WithSelect(ap_uint<1> select,
 		  hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream,
 		  hls::stream< ap_int<8> > &xInitOffsetStream, hls::stream< ap_int<8> > &yInitOffsetStream,
@@ -3462,6 +2907,10 @@ void rwSlicesScale0WithSelect(ap_uint<1> select,
 	}
 }
 
+/*
+ * If the event is a corner (select == 1) , it goes for further processing.
+ * Otherwise it only do the simple evnet accumulation and reset the 'reset' slice.
+ */
 void rwSlicesScale1WithSelect(ap_uint<1> select,
 		hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream,
 		hls::stream< ap_int<8> > &xInitOffsetStream, hls::stream< ap_int<8> > &yInitOffsetStream,
@@ -3530,6 +2979,10 @@ void rwSlicesScale1WithSelect(ap_uint<1> select,
 	}
 }
 
+/*
+ * If the event is a corner (select == 1) , it goes for further processing.
+ * Otherwise it only do the simple evnet accumulation and reset the 'reset' slice.
+ */
 void rwSlicesScale2WithSelect(ap_uint<1> select,
 		  hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream,
 		  hls::stream<sliceIdx_t> &idxStream,
@@ -3626,10 +3079,6 @@ void reOrderStreamScale1WithSelect(ap_uint<1> select,
 	{
 		reOrderStreamScale1(refSingleStreamOut, tagSingleStreamOut, refNPCStreamOut, tagNPCStreamOut);
 	}
-	else
-	{
-
-	}
 }
 
 void colStreamToColSumScale0WithSelect(ap_uint<1> select,
@@ -3641,15 +3090,6 @@ void colStreamToColSumScale0WithSelect(ap_uint<1> select,
 	if(select == 1)
 	{
 		colStreamToColSumScale0(colStream0, colStream1, outStream, refZeroCntStream, tagColValidCntStream, refTagValidCntStream);
-	}
-	else
-	{
-//		apIntBlockScale0ColNPC_t tmpStreamData0 = colStream0.read();
-//		apIntBlockScale0ColNPC_t tmpStreamData1 = colStream1.read();
-//		refZeroCntStream.write(0);
-//		outStream.write(0);
-//		tagColValidCntStream.write(0);
-//		refTagValidCntStream.write(0);
 	}
 }
 
@@ -3663,15 +3103,6 @@ void colStreamToColSumScale1WithSelect(ap_uint<1> select,
 	{
 		colStreamToColSumScale1(colStream0, colStream1, outStream, refZeroCntStream, tagColValidCntStream, refTagValidCntStream);
 	}
-	else
-	{
-//		apIntBlockScale1Col_t tmpStreamData0 = colStream0.read();
-//		apIntBlockScale1Col_t tmpStreamData1 = colStream1.read();
-//		refZeroCntStream.write(0);
-//		outStream.write(0);
-//		tagColValidCntStream.write(0);
-//		refTagValidCntStream.write(0);
-	}
 }
 
 void colStreamToColSumScale2WithSelect(ap_uint<1> select,
@@ -3683,15 +3114,6 @@ void colStreamToColSumScale2WithSelect(ap_uint<1> select,
 	if(select == 1)
 	{
 		colStreamToColSumScale2(colStream0, colStream1, outStream, refZeroCntStream, tagColValidCntStream, refTagValidCntStream);
-	}
-	else
-	{
-//		apIntBlockScale2Col_t tmpStreamData0 = colStream0.read();
-//		apIntBlockScale2Col_t tmpStreamData1 = colStream1.read();
-//		refZeroCntStream.write(0);
-//		outStream.write(0);
-//		tagColValidCntStream.write(0);
-//		refTagValidCntStream.write(0);
 	}
 }
 
@@ -3706,20 +3128,6 @@ void accumulateStreamScale0WithSelect(ap_uint<1> select,
 	{
 		accumulateStreamScale0(inStream, outStream, OF_yStream, refZeroCntStream, tagColValidCntStream,  refTagValidCntStream);
 	}
-	else
-	{
-		apUintColSumNPC_t inDataNPC;
-		apUintValidCntNPC_t tagColValidCntDataNPC;
-		apUintValidCntNPC_t refTagValidCntDataNPC;
-		apUintRefZeroCntNPC_t refZeroCntNPC;
-
-//		inDataNPC = inStream.read();
-//		tagColValidCntDataNPC = tagColValidCntStream.read();
-//		refTagValidCntDataNPC = refTagValidCntStream.read();
-//		refZeroCntNPC = refZeroCntStream.read();
-//		outStream.write(0);
-//		OF_yStream.write(0);
-	}
 }
 
 void accumulateStreamScale1WithSelect(ap_uint<1> select,
@@ -3731,20 +3139,6 @@ void accumulateStreamScale1WithSelect(ap_uint<1> select,
 	if(select == 1)
 	{
 		accumulateStreamScale1(inStream, outStream, OF_yStream, refZeroCntStream, tagColValidCntStream,  refTagValidCntStream);
-	}
-	else
-	{
-//		apUint112_t inDataNPC;
-//		apUint42_t tagColValidCntDataNPC;
-//		apUint42_t refTagValidCntDataNPC;
-//		apUint6_t refZeroCntNPC;
-//
-//		inDataNPC = inStream.read();
-//		tagColValidCntDataNPC = tagColValidCntStream.read();
-//		refTagValidCntDataNPC = refTagValidCntStream.read();
-//		refZeroCntNPC = refZeroCntStream.read();
-//		outStream.write(0);
-//		OF_yStream.write(0);
 	}
 }
 
@@ -3758,20 +3152,6 @@ void accumulateStreamScale2WithSelect(ap_uint<1> select,
 	{
 		accumulateStreamScale2(inStream, outStream, OF_yStream, refZeroCntStream, tagColValidCntStream,  refTagValidCntStream);
 	}
-	else
-	{
-//		apUint112_t inDataNPC;
-//		apUint42_t tagColValidCntDataNPC;
-//		apUint42_t refTagValidCntDataNPC;
-//		apUint6_t refZeroCntNPC;
-//
-//		inDataNPC = inStream.read();
-//		tagColValidCntDataNPC = tagColValidCntStream.read();
-//		refTagValidCntDataNPC = refTagValidCntStream.read();
-//		refZeroCntNPC = refZeroCntStream.read();
-//		outStream.write(0);
-//		OF_yStream.write(0);
-	}
 }
 
 
@@ -3783,13 +3163,6 @@ void findStreamMinScale0WithSelect(ap_uint<1> select,
 	{
 		findStreamMinScale0(inStream, OF_yStream, minStream, OFStream);
 	}
-	else
-	{
-//		int16_t inData = inStream.read();
-//		ap_uint<3> tmpOF_y = ap_uint<3>(OF_yStream.read());
-//		minStream.write(0x7fff);
-//		OFStream.write(0x3f);
-	}
 }
 
 void findStreamMinScale1WithSelect(ap_uint<1> select,
@@ -3799,13 +3172,6 @@ void findStreamMinScale1WithSelect(ap_uint<1> select,
 	if(select == 1)
 	{
 		findStreamMinScale1(inStream, OF_yStream, minStream, OFStream);
-	}
-	else
-	{
-//		int16_t inData = inStream.read();
-//		ap_uint<3> tmpOF_y = ap_uint<3>(OF_yStream.read());
-//		minStream.write(0x7fff);
-//		OFStream.write(0x3f);
 	}
 }
 
@@ -3817,15 +3183,14 @@ void findStreamMinScale2WithSelect(ap_uint<1> select,
 	{
 		findStreamMinScale2(inStream, OF_yStream, minStream, OFStream);
 	}
-	else
-	{
-//		int16_t inData = inStream.read();
-//		ap_uint<3> tmpOF_y = ap_uint<3>(OF_yStream.read());
-//		minStream.write(0x7fff);
-//		OFStream.write(0x3f);
-	}
 }
 
+/**
+ * Obtain the OF from last coarser scale and then use it as the init offset for the finer scale.
+ * This is from scale 2 to scale 1.
+ * If select is 0 (not a corner), skip this module.
+ * Otherwise go for further processing.
+ */
 void getInitOffsetForNextScale1WithSelect(ap_uint<1> select,
 		hls::stream<apUint15_t> &miniSumStreamScale2,  hls::stream<apUint6_t> &OFRetStreamScale2,
 		hls::stream< ap_int<8> > &xInitOffsetScale1Stream, hls::stream< ap_int<8> > &yInitOffsetScale1Stream,
@@ -3848,20 +3213,16 @@ void getInitOffsetForNextScale1WithSelect(ap_uint<1> select,
 	}
 	else
 	{
-//		apUint6_t tmpOFScale2 = OFRetStreamScale2.read();
-//		apUint15_t tmpMiniOFScale2 = miniSumStreamScale2.read();
-//		ap_int<8> xInitOffsetScale1 = ap_int<8>(tmpOFScale2.range(2,0) - 3) << 1;
-//		ap_int<8> yInitOffsetScale1 = ap_int<8>(tmpOFScale2.range(5,3) - 3) << 1;
-//		OFRetStreamScale2Copy.write(tmpOFScale2);
-//		miniSumStreamScale2Copy.write(tmpMiniOFScale2);
-//		xInitOffsetScale1Stream.write(xInitOffsetScale1);
-//		yInitOffsetScale1Stream.write(yInitOffsetScale1);
-//		xInitOffsetScale1StreamCopy.write(xInitOffsetScale1);
-//		yInitOffsetScale1StreamCopy.write(yInitOffsetScale1);
 	}
 
 }
 
+/**
+ * Obtain the OF from last coarser scale and then use it as the init offset for the finer scale.
+ * This is from scale 1 to scale 0.
+ * If select is 0 (not a corner), skip this module.
+ * Otherwise go for further processing.
+ */
 void getInitOffsetForNextScale0WithSelect(ap_uint<1> select,
 		hls::stream<apUint15_t> &miniSumStreamScale1,  hls::stream<apUint6_t> &OFRetStreamScale1,
 		hls::stream< ap_int<8> > &xInitOffsetScale1StreamCopy, hls::stream< ap_int<8> > &yInitOffsetScale1StreamCopy,
@@ -3884,20 +3245,14 @@ void getInitOffsetForNextScale0WithSelect(ap_uint<1> select,
 	}
 	else
 	{
-//		apUint6_t tmpOFScale1 = OFRetStreamScale1.read();
-//		apUint15_t tmpMiniOFScale1 = miniSumStreamScale1.read();
-//		ap_int<8> xInitOffsetScale1Copy = xInitOffsetScale1StreamCopy.read();
-//		ap_int<8> yInitOffsetScale1Copy = yInitOffsetScale1StreamCopy.read();
-//	    ap_int<8> xInitOffsetScale0 = (ap_int<8>(tmpOFScale1.range(2,0) - 3) << 1) + (xInitOffsetScale1Copy << 1);
-//	    ap_int<8> yInitOffsetScale0 = (ap_int<8>(tmpOFScale1.range(5,3) - 3) << 1) + (yInitOffsetScale1Copy << 1);
-//	    OFRetStreamScale1Copy.write(tmpOFScale1);
-//	    miniSumStreamScale1Copy.write(tmpMiniOFScale1);
-//	    xInitOffsetScale0Stream.write(xInitOffsetScale0);
-//	    yInitOffsetScale0Stream.write(yInitOffsetScale0);
 	}
 
 }
 
+/**
+ * If select is 0 (not a corner), skip this module.
+ * Otherwise go for further processing.
+ */
 void feedbackAndCombineOutputStreamWithSelect(ap_uint<1> select,
 		hls::stream< ap_uint<96> > &packetEventDataStream,
 		hls::stream<apUint15_t> &miniSumStreamScale0, hls::stream<apUint6_t> &OFRetStreamScale0,
@@ -3944,7 +3299,6 @@ void feedbackAndCombineOutputStreamWithSelect(ap_uint<1> select,
     	ap_int<9> tmp2 = miniRet.range(8, 0);
     	apUint6_t tmpOF = OFRet;
 
-//    	feedback(miniRet, tmpOF, glRotateFlg, &tmpThr);
     	feedbackWithoutOFHist(miniRet, OFRet, glRotateFlg, &tmpThr);
 
 		ap_uint<17> custData;
@@ -3973,70 +3327,16 @@ void feedbackAndCombineOutputStreamWithSelect(ap_uint<1> select,
 	}
 }
 
-void EVABMOFScale0Stream(ap_uint<1> select,
-		hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream,
-		hls::stream< ap_int<8> > &xInitOffsetStream, hls::stream< ap_int<8> > &yInitOffsetStream,
-		hls::stream<sliceIdx_t> &idxStream,
-//		hls::stream< ap_uint<64> > &tsStreamIn, hls::stream< ap_uint<1> > &polStreamIn,
-//		hls::stream< ap_uint<16> > &xStreamOut, hls::stream< ap_uint<16> > &yStreamOut, hls::stream< ap_uint<64> > &tsStreamOut, hls::stream< ap_uint<1> > &polStreamOut,
-		hls::stream<apUint15_t> &minStream,  hls::stream<apUint6_t> &OFStream)
-{
-#pragma HLS DATAFLOW
-#pragma HLS INLINE off
-
-#pragma HLS INTERFACE axis register both port=OFStream
-#pragma HLS INTERFACE axis register both port=minStream
-
-#pragma HLS INTERFACE axis register both port=idxStream
-#pragma HLS INTERFACE axis register both port=yInitOffsetStream
-#pragma HLS INTERFACE axis register both port=xInitOffsetStream
-#pragma HLS INTERFACE axis register both port=yStream
-#pragma HLS INTERFACE axis register both port=xStream
-
-	hls::stream<apIntBlockScale0Col_t> refStream("refStream"), tagStreamIn("tagStream");
-#pragma HLS STREAM variable=refStream depth=10 dim=1
-#pragma HLS RESOURCE variable=refStream core=FIFO_SRL
-#pragma HLS STREAM variable=tagStreamIn depth=10 dim=1
-#pragma HLS RESOURCE variable=tagStreamIn core=FIFO_SRL
-
-	hls::stream<apIntBlockScale0ColNPC_t> refNPCStream("refNPCStream"), tagNPCStreamIn("tagNPCStreamIn");
-#pragma HLS STREAM variable=refNPCStream depth=10 dim=1
-#pragma HLS RESOURCE variable=refNPCStream core=FIFO_SRL
-#pragma HLS STREAM variable=tagNPCStreamIn depth=10 dim=1
-#pragma HLS RESOURCE variable=tagNPCStreamIn core=FIFO_SRL
-
-	hls::stream<apUintColSumNPC_t> outStream("sumStream");
-#pragma HLS STREAM variable=outStream depth=10 dim=1
-#pragma HLS RESOURCE variable=outStream core=FIFO_SRL
-
-	hls::stream<int16_t> outSumStream("outSumStream"), outSumStreamScale1("outSumStreamScale1"), outSumStreamScale2("outSumStreamScale2");
-	hls::stream<int8_t> OF_yStream("OF_yStream"), OF_yStreamScale1("OF_yStreamScale1"), OF_yStreamScale2("OF_yStreamScale2");
-
-	hls::stream<apUintRefZeroCntNPC_t> refZeroCntStream("refZeroCntStream");
-	hls::stream<apUint6_t> refZeroCntStreamScale1("refZeroCntStreamScale1"), refZeroCntStreamScale2("refZeroCntStreamScale2");
-#pragma HLS STREAM variable=refZeroCntStream depth=2 dim=1
-#pragma HLS STREAM variable=refZeroCntStreamScale1 depth=2 dim=1
-#pragma HLS STREAM variable=refZeroCntStreamScale2 depth=2 dim=1
-
-	hls::stream<apUintValidCntNPC_t> tagColValidCntStream("tagColValidCntStream");
-	hls::stream<apUintValidCnt_t> tagColValidCntStreamScale1("tagColValidCntStreamScale1"), tagColValidCntStreamScale2("tagColValidCntStreamScale2");
-#pragma HLS STREAM variable=tagColValidCntStream depth=2 dim=1
-#pragma HLS STREAM variable=tagColValidCntStreamScale1 depth=2 dim=1
-#pragma HLS STREAM variable=tagColValidCntStreamScale2 depth=2 dim=1
-
-	hls::stream<apUintValidCntNPC_t> refTagValidCntStream("refTagValidCntStream");
-	hls::stream<apUintValidCnt_t> refTagValidCntStreamScale1("refTagValidCntStreamScale1"), refTagValidCntStreamScale2("refTagValidCntStreamScale2");
-#pragma HLS STREAM variable=refTagValidCntStream depth=2 dim=1
-#pragma HLS STREAM variable=refTagValidCntStreamScale1 depth=2 dim=1
-#pragma HLS STREAM variable=refTagValidCntStreamScale2 depth=2 dim=1
-
-	rwSlicesScale0WithSelect(select, xStream, yStream, xInitOffsetStream, yInitOffsetStream, idxStream, refStream, tagStreamIn);
-	reOrderStreamScale0WithSelect(select, refStream, tagStreamIn, refNPCStream, tagNPCStreamIn);
-	colStreamToColSumScale0WithSelect(select, refNPCStream, tagNPCStreamIn, outStream, refZeroCntStream, tagColValidCntStream, refTagValidCntStream);
-	accumulateStreamScale0WithSelect(select, outStream, outSumStream, OF_yStream, refZeroCntStream, tagColValidCntStream,  refTagValidCntStream);
-	findStreamMinScale0WithSelect(select, outSumStream, OF_yStream, minStream, OFStream);
-}
-
+/**
+ * Input:
+ * xStreamIn, yStreamIn, tsStreamIn and polStreamIn: raw event stream but is splited into 4 seperated streams
+ * controStreamIn: input signal to choose if bypass the ABMOF (not a corner) or not 
+ * config: a register controlled by AXI4Liet and can be used to configure this IP
+ * Output:
+ * xStreamOut, yStreamOut, tsStreamOut, polStreamOut: processed event stream represented in 4 seperated streaam
+ * pixelDataStream: the custom data stream, can be used for later VGA display
+ * status: output register to show IP status via AXI4Lite bus
+ */
 void EVABMOFStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn,
 		hls::stream< ap_uint<64> > &tsStreamIn, hls::stream< ap_uint<1> > &polStreamIn,
 		hls::stream< ap_uint<1> > &controlStreamIn,
@@ -4230,11 +3530,13 @@ void EVABMOFStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream
 	truncateStreamWithControl(xStreamIn, yStreamIn, polStreamIn, tsStreamIn, controlStreamIn,
 			xInStream, yInStream, tsInStream, pktEventDataStream, &select);
 
-//	rotateSlice(xInStream, yInStream, tsInStream, xOutStream, yOutStream, idxStream);
 	rotateSliceAllScales(xInStream, yInStream, tsInStream, xOutStream, yOutStream, idxStream,
 				xOutStreamScale1, yOutStreamScale1, idxStreamScale1,
 				xOutStreamScale2, yOutStreamScale2, idxStreamScale2);
-//	rwSlices(xOutStream, yOutStream, idxStream, refStream, tagStreamIn, refStreamScale1, tagStreamInScale1, refStreamScale2, tagStreamInScale2);
+
+    /*
+     * Scale 2 (coarse scale) optical flow estimation
+     */
 	rwSlicesScale2WithSelect(select, xOutStreamScale2, yOutStreamScale2, idxStreamScale2, refStreamScale2, tagStreamInScale2);
 	colStreamToColSumScale2WithSelect(select, refStreamScale2, tagStreamInScale2, outStreamScale2, refZeroCntStreamScale2, tagColValidCntStreamScale2, refTagValidCntStreamScale2);
 	accumulateStreamScale2WithSelect(select, outStreamScale2, outSumStreamScale2, OF_yStreamScale2, refZeroCntStreamScale2, tagColValidCntStreamScale2,  refTagValidCntStreamScale2);
@@ -4246,6 +3548,9 @@ void EVABMOFStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream
 			xInitOffsetScale1StreamCopy, yInitOffsetScale1StreamCopy,
 			miniSumStreamScale2Copy, OFRetStreamScale2Copy);
 
+    /*
+     * Scale 1 (medium scale) optical flow estimation
+     */
 	rwSlicesScale1WithSelect(select, xOutStreamScale1, yOutStreamScale1, xInitOffsetScale1Stream, yInitOffsetScale1Stream, idxStreamScale1, refStreamScale1, tagStreamInScale1);
 	reOrderStreamScale1WithSelect(select, refStreamScale1, tagStreamInScale1, refNPCStreamScale1, tagNPCStreamInScale1);
 	colStreamToColSumScale1WithSelect(select, refNPCStreamScale1, tagNPCStreamInScale1, outStreamScale1, refZeroCntStreamScale1, tagColValidCntStreamScale1, refTagValidCntStreamScale1);
@@ -4258,12 +3563,16 @@ void EVABMOFStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream
 			xInitOffsetScale0Stream, yInitOffsetScale0Stream,
 			miniSumStreamScale1Copy, OFRetStreamScale1Copy);
 
+    /*
+     * Scale 0 (fine scale) optical flow estimation
+     */
 	rwSlicesScale0WithSelect(select, xOutStream, yOutStream, xInitOffsetScale0Stream, yInitOffsetScale0Stream, idxStream, refStream, tagStreamIn);
 	reOrderStreamScale0WithSelect(select, refStream, tagStreamIn, refNPCStream, tagNPCStreamIn);
 	colStreamToColSumScale0WithSelect(select, refNPCStream, tagNPCStreamIn, outStream, refZeroCntStream, tagColValidCntStream, refTagValidCntStream);
 	accumulateStreamScale0WithSelect(select, outStream, outSumStream, OF_yStream, refZeroCntStream, tagColValidCntStream,  refTagValidCntStream);
 	findStreamMinScale0WithSelect(select, outSumStream, OF_yStream, miniSumStreamScale0, OFRetStreamScale0);
 
+    // Event count number feedback and output processed stream
 	feedbackAndCombineOutputStreamWithSelect(select,
 								pktEventDataStream,
 								miniSumStreamScale0, OFRetStreamScale0,
@@ -4271,6 +3580,7 @@ void EVABMOFStreamWithControl(hls::stream< ap_uint<16> > &xStreamIn, hls::stream
 								miniSumStreamScale2Copy, OFRetStreamScale2Copy,
 								xStreamOut, yStreamOut, polStreamOut, tsStreamOut, pixelDataStream);
 
+    // Store status to the status register
 	glStatus.currentDeltaTSHW = deltaTsHWBak;
 	glStatus.currentAreaCntThr = glSFASTAreaCntThrBak;
 	glStatus.currentFeedbackAreaCntThr = areaEventThrBak;
