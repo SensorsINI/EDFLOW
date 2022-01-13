@@ -3,10 +3,7 @@
 //#include "hls_math.h"
 #include "utils/x_hls_utils.h"
 
-static col_pix_t glPLSlices[SLICES_NUMBER][SLICE_WIDTH][SLICE_HEIGHT/COMBINED_PIXELS];
-static col_pix_t glPLSlicesScale1[SLICES_NUMBER][SLICE_WIDTH/2][SLICE_HEIGHT/COMBINED_PIXELS/2];
-static col_pix_t glPLSlicesScale2[SLICES_NUMBER][SLICE_WIDTH/4][SLICE_HEIGHT/COMBINED_PIXELS/4];
-
+// Event slice memory buffer, SFAST only uses scale 2 (coarse scale)
 static col_pix_t glPLSFASTSliceScale2[SLICES_NUMBER][SLICE_WIDTH/4][SLICE_HEIGHT/COMBINED_PIXELS/4];
 
 sliceIdx_t oldIdx = 0;
@@ -102,78 +99,6 @@ void writePixToCol(col_pix_t *colData, ap_uint<8> idx, pix_t pixData)
 	}
 }
 
-void resetPix(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
-{
-#pragma HLS INLINE
-	glPLSlices[sliceIdx][x][y/COMBINED_PIXELS] = 0;
-	glPLSlicesScale1[sliceIdx][x/2][y/COMBINED_PIXELS/2] = 0;
-	glPLSlicesScale2[sliceIdx][x/4][y/COMBINED_PIXELS/4] = 0;
-	glPLSFASTSliceScale2[sliceIdx][x/4][y/COMBINED_PIXELS/4] = 0;
-}
-
-
-void writePix(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
-{
-#pragma HLS DEPENDENCE variable=glPLSlicesScale2 inter false
-#pragma HLS DEPENDENCE variable=glPLSlicesScale1 inter false
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale2 cyclic factor=1 dim=3
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale2 complete dim=1
-#pragma HLS RESOURCE variable=glPLSlicesScale1 core=RAM_T2P_BRAM
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale1 cyclic factor=1 dim=3
-#pragma HLS ARRAY_PARTITION variable=glPLSlicesScale1 complete dim=1
-#pragma HLS PIPELINE
-#pragma HLS RESOURCE variable=glPLSlices core=RAM_T2P_BRAM
-#pragma HLS INLINE
-#pragma HLS ARRAY_PARTITION variable=glPLSlices complete dim=1
-#pragma HLS ARRAY_PARTITION variable=glPLSlices cyclic factor=1 dim=3
-#pragma HLS DEPENDENCE variable=glPLSlices inter false
-	col_pix_t tmpData;
-	pix_t tmpTmpData;
-
-	ap_uint<8> yNewIdx = y%COMBINED_PIXELS;
-
-	tmpData = glPLSlices[sliceIdx][x][y/COMBINED_PIXELS];
-
-	tmpTmpData = readPixFromCol(tmpData, yNewIdx);
-
-	ap_uint<1> cmpFlg = ap_uint<1>(tmpTmpData < (ap_uint< BITS_PER_PIXEL >(0xff)));
-	tmpTmpData +=  cmpFlg;
-
-	writePixToCol(&tmpData, yNewIdx, tmpTmpData);
-
-	glPLSlices[sliceIdx][x][y/COMBINED_PIXELS] = tmpData;
-
-    // write scale 1
-	apUint10_t xScale1 = x/2;
-	apUint10_t yScale1 = y/2;
-    ap_uint<8> yNewIdxScale1 = yScale1%COMBINED_PIXELS;
-
-	col_pix_t tmpDataScale1;
-	pix_t tmpTmpDataScale1;
-
-	tmpDataScale1 = glPLSlicesScale1[sliceIdx][xScale1][yScale1/COMBINED_PIXELS];
-	tmpTmpDataScale1 = readPixFromCol(tmpDataScale1, yNewIdxScale1);
-	ap_uint<1> cmpFlgScale1 = ap_uint<1>(tmpTmpDataScale1 < (ap_uint< BITS_PER_PIXEL >(0xff)));
-	tmpTmpDataScale1 +=  cmpFlgScale1;
-	writePixToCol(&tmpDataScale1, yNewIdxScale1, tmpTmpDataScale1);
-    glPLSlicesScale1[sliceIdx][xScale1][yScale1/COMBINED_PIXELS] = tmpDataScale1;
-
-    // write scale 2
-    apUint10_t xScale2 = x/4;
-    apUint10_t yScale2 = y/4;
-    ap_uint<8> yNewIdxScale2 = yScale2%COMBINED_PIXELS;
-
-	col_pix_t tmpDataScale2;
-	pix_t tmpTmpDataScale2;
-
-	tmpDataScale2 = glPLSlicesScale2[sliceIdx][xScale2][yScale2/COMBINED_PIXELS];
-	tmpTmpDataScale2 = readPixFromCol(tmpDataScale2, yNewIdxScale2);
-	ap_uint<1> cmpFlgScale2 = ap_uint<1>(tmpTmpDataScale2 < (ap_uint< BITS_PER_PIXEL >(0xff)));
-	tmpTmpDataScale2 +=  cmpFlgScale2;
-	writePixToCol(&tmpDataScale2, yNewIdxScale2, tmpTmpDataScale2);
-    glPLSlicesScale2[sliceIdx][xScale2][yScale2/COMBINED_PIXELS] = tmpDataScale2;
-}
-
 void resetSFASTPix(apUint10_t y, apUint10_t x, sliceIdx_t sliceIdx)
 {
 #pragma HLS INLINE
@@ -202,384 +127,20 @@ void writeSFASTPix(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdx)
 	glPLSFASTSliceScale2[sliceIdx][ySFASTScale2][xSFASTScale2/COMBINED_PIXELS] = tmpDataSFASTScale2;
 }
 
-
-void readBlockCols(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
-		pix_t refCol[BLOCK_SIZE + 2 * SEARCH_DISTANCE],
-		pix_t tagCol[BLOCK_SIZE + 2 * SEARCH_DISTANCE])
-{
-#pragma HLS INLINE
-#pragma HLS PIPELINE
-#pragma HLS ARRAY_RESHAPE variable=refCol complete dim=1
-#pragma HLS ARRAY_RESHAPE variable=tagCol complete dim=1
-
-	two_cols_pix_t refColData;
-    two_cols_pix_t tagColData;
-    ap_uint<8> neighboryOffset;
-    if ( y%COMBINED_PIXELS < BLOCK_SIZE/2 + SEARCH_DISTANCE )
-    {
-        neighboryOffset = y/COMBINED_PIXELS - 1;
-    }
-    else
-    {
-        neighboryOffset = y/COMBINED_PIXELS + 1;
-    }
-
-    // concatenate two columns together
-    refColData = (glPLSlices[sliceIdxRef][x][y/COMBINED_PIXELS], glPLSlices[sliceIdxRef][x][neighboryOffset]);
-    //	cout << "refColData: " << refColData << endl;
-    // concatenate two columns together
-    // Use explicit cast here, otherwise it will generate a lot of select operations which consumes more LUTs than MUXs.
-    tagColData = (glPLSlices[(sliceIdx_t)(sliceIdxTag + 0)][x][y/COMBINED_PIXELS], glPLSlices[(sliceIdx_t)(sliceIdxTag + 0)][x][neighboryOffset]);
-
-	// find the bottom pixel of the column that centered on y.
-	ap_uint<6> yColOffsetIdx = y%COMBINED_PIXELS - BLOCK_SIZE/2 - SEARCH_DISTANCE + COMBINED_PIXELS;
-
-	readRefLoop: for(ap_uint<8> i = 0; i < BLOCK_SIZE + 2 * SEARCH_DISTANCE; i++)
-	{
-		refCol[i] = readPixFromTwoCols(refColData,  yColOffsetIdx);
-		tagCol[i] = readPixFromTwoCols(tagColData,  yColOffsetIdx);
-		yColOffsetIdx++;
-	}
-
-}
-
-
-void readBlockColsScale1(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
-		pix_t refColScale1[BLOCK_SIZE + 2 * SEARCH_DISTANCE],
-		pix_t tagColScale1[BLOCK_SIZE + 2 * SEARCH_DISTANCE])
-{
-#pragma HLS ARRAY_RESHAPE variable=tagColScale1 complete dim=1
-#pragma HLS ARRAY_RESHAPE variable=refColScale1 complete dim=1
-#pragma HLS PIPELINE
-#pragma HLS INLINE
-
-	two_cols_pix_t refColData;
-    two_cols_pix_t tagColData;
-    ap_uint<8> neighboryOffset;
-    if ( y%COMBINED_PIXELS < BLOCK_SIZE/2 + SEARCH_DISTANCE )
-    {
-        neighboryOffset = y/COMBINED_PIXELS - 1;
-    }
-    else
-    {
-        neighboryOffset = y/COMBINED_PIXELS + 1;
-    }
-
-    // concatenate two columns together
-    refColData = (glPLSlicesScale1[sliceIdxRef][x][y/COMBINED_PIXELS], glPLSlicesScale1[sliceIdxRef][x][neighboryOffset]);
-    //	cout << "refColData: " << refColData << endl;
-    // concatenate two columns together
-    // Use explicit cast here, otherwise it will generate a lot of select operations which consumes more LUTs than MUXs.
-    tagColData = (glPLSlicesScale1[(sliceIdx_t)(sliceIdxTag + 0)][x][y/COMBINED_PIXELS], glPLSlicesScale1[(sliceIdx_t)(sliceIdxTag + 0)][x][neighboryOffset]);
-
-	// find the bottom pixel of the column that centered on y.
-	ap_uint<6> yColOffsetIdx = y%COMBINED_PIXELS - BLOCK_SIZE/2 - SEARCH_DISTANCE + COMBINED_PIXELS;
-
-	readRefLoop: for(ap_uint<8> i = 0; i < BLOCK_SIZE + 2 * SEARCH_DISTANCE; i++)
-	{
-		refColScale1[i] = readPixFromTwoCols(refColData,  yColOffsetIdx);
-		tagColScale1[i] = readPixFromTwoCols(tagColData,  yColOffsetIdx);
-		yColOffsetIdx++;
-	}
-}
-
-void readBlockColsScale2(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
-		pix_t refColScale2[BLOCK_SIZE + 2 * SEARCH_DISTANCE],
-		pix_t tagColScale2[BLOCK_SIZE + 2 * SEARCH_DISTANCE])
-{
-#pragma HLS ARRAY_RESHAPE variable=tagColScale2 complete dim=1
-#pragma HLS ARRAY_RESHAPE variable=refColScale2 complete dim=1
-#pragma HLS PIPELINE
-#pragma HLS INLINE
-
-	two_cols_pix_t refColData;
-    two_cols_pix_t tagColData;
-    ap_uint<8> neighboryOffset;
-    if ( y%COMBINED_PIXELS < BLOCK_SIZE/2 + SEARCH_DISTANCE )
-    {
-        neighboryOffset = y/COMBINED_PIXELS - 1;
-    }
-    else
-    {
-        neighboryOffset = y/COMBINED_PIXELS + 1;
-    }
-
-    // concatenate two columns together
-    refColData = (glPLSlicesScale2[sliceIdxRef][x][y/COMBINED_PIXELS], glPLSlicesScale2[sliceIdxRef][x][neighboryOffset]);
-    //	cout << "refColData: " << refColData << endl;
-    // concatenate two columns together
-    // Use explicit cast here, otherwise it will generate a lot of select operations which consumes more LUTs than MUXs.
-    tagColData = (glPLSlicesScale2[(sliceIdx_t)(sliceIdxTag + 0)][x][y/COMBINED_PIXELS], glPLSlicesScale2[(sliceIdx_t)(sliceIdxTag + 0)][x][neighboryOffset]);
-
-	// find the bottom pixel of the column that centered on y.
-	ap_uint<6> yColOffsetIdx = y%COMBINED_PIXELS - BLOCK_SIZE/2 - SEARCH_DISTANCE + COMBINED_PIXELS;
-
-	readRefLoop: for(ap_uint<8> i = 0; i < BLOCK_SIZE + 2 * SEARCH_DISTANCE; i++)
-	{
-		refColScale2[i] = readPixFromTwoCols(refColData,  yColOffsetIdx);
-		tagColScale2[i] = readPixFromTwoCols(tagColData,  yColOffsetIdx);
-		yColOffsetIdx++;
-	}
-}
-
-void readBlockSFASTScale2(apUint10_t x, apUint10_t y, sliceIdx_t sliceIdxRef, sliceIdx_t sliceIdxTag,
-		pix_t refColScale2[BLOCK_SIZE + 2 * SEARCH_DISTANCE],
-		pix_t tagColScale2[BLOCK_SIZE + 2 * SEARCH_DISTANCE])
-{
-#pragma HLS ARRAY_RESHAPE variable=tagColScale2 complete dim=1
-#pragma HLS ARRAY_RESHAPE variable=refColScale2 complete dim=1
-#pragma HLS PIPELINE
-#pragma HLS INLINE
-
-	two_cols_pix_t refColData;
-    two_cols_pix_t tagColData;
-    ap_uint<8> neighboryOffset;
-    if ( y%COMBINED_PIXELS < BLOCK_SIZE/2 + SEARCH_DISTANCE )
-    {
-        neighboryOffset = y/COMBINED_PIXELS - 1;
-    }
-    else
-    {
-        neighboryOffset = y/COMBINED_PIXELS + 1;
-    }
-
-    // concatenate two columns together
-    refColData = (glPLSFASTSliceScale2[sliceIdxRef][x][y/COMBINED_PIXELS], glPLSFASTSliceScale2[sliceIdxRef][x][neighboryOffset]);
-    //	cout << "refColData: " << refColData << endl;
-    // concatenate two columns together
-    // Use explicit cast here, otherwise it will generate a lot of select operations which consumes more LUTs than MUXs.
-    tagColData = (glPLSFASTSliceScale2[(sliceIdx_t)(sliceIdxTag + 0)][x][y/COMBINED_PIXELS], glPLSFASTSliceScale2[(sliceIdx_t)(sliceIdxTag + 0)][x][neighboryOffset]);
-
-	// find the bottom pixel of the column that centered on y.
-	ap_uint<6> yColOffsetIdx = y%COMBINED_PIXELS - BLOCK_SIZE/2 - SEARCH_DISTANCE + COMBINED_PIXELS;
-
-	readRefLoop: for(ap_uint<8> i = 0; i < BLOCK_SIZE + 2 * SEARCH_DISTANCE; i++)
-	{
-		refColScale2[i] = readPixFromTwoCols(refColData,  yColOffsetIdx);
-		tagColScale2[i] = readPixFromTwoCols(tagColData,  yColOffsetIdx);
-		yColOffsetIdx++;
-	}
-}
-
-void rwSlices(hls::stream<apUint10_t> &xStream, hls::stream<apUint10_t> &yStream, hls::stream<sliceIdx_t> &idxStream,
-			  hls::stream<apIntBlockCol_t> &refStreamOut, hls::stream<apIntBlockCol_t> &tagStreamOut,
-			  hls::stream<apIntBlockCol_t> &refStreamOutScale1, hls::stream<apIntBlockCol_t> &tagStreamOutScale1,
-			  hls::stream<apIntBlockCol_t> &refStreamOutScale2, hls::stream<apIntBlockCol_t> &tagStreamOutScale2)
-{
-#pragma HLS INLINE off
-	apUint10_t xRd;
-	apUint10_t yRd;
-	sliceIdx_t idx;
-
-	apIntBlockCol_t colData0[BLOCK_SIZE], colData1[BLOCK_SIZE + 2 * SEARCH_DISTANCE];
-
-	pix_t out1_debug[BLOCK_SIZE + 2 * SEARCH_DISTANCE][BLOCK_SIZE + 2 * SEARCH_DISTANCE];
-	pix_t out2_debug[BLOCK_SIZE + 2 * SEARCH_DISTANCE][BLOCK_SIZE + 2 * SEARCH_DISTANCE];
-
-    pix_t out1Scale1_debug[BLOCK_SIZE + 2 * SEARCH_DISTANCE][BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-    pix_t out2Scale1_debug[BLOCK_SIZE + 2 * SEARCH_DISTANCE][BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-
-    pix_t out1Scale2_debug[BLOCK_SIZE + 2 * SEARCH_DISTANCE][BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-    pix_t out2Scale2_debug[BLOCK_SIZE + 2 * SEARCH_DISTANCE][BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-
-//	rwSlicesLoop:for(int32_t i = 0; i < eventIterSize; i++)
-//	{
-		rwSlicesInnerLoop:for(int8_t xOffSet = 0; xOffSet < BLOCK_SIZE * (2 * SEARCH_DISTANCE + 1); xOffSet++)
-		{
-#pragma HLS PIPELINE rewind
-//			xRd = (xOffSet == 0)? (ap_uint<8>)(xStream.read()): xRd;
-//			yRd = (xOffSet == 0)? (ap_uint<8>)(yStream.read()): yRd;
-			if (xOffSet == 0)
-			{
-				xRd = xStream.read();
-				yRd = yStream.read();
-				idx = idxStream.read();
-
-				/* This is only for C-simulation and debugging. */
-				if (oldIdx != idx)
-				{
-					oldIdx = idx;
-					// Check the accumulation slice is clear or not
-					for(int32_t xAddr = 0; xAddr < SLICE_WIDTH; xAddr++)
-					{
-						for(int32_t yAddr = 0; yAddr < SLICE_HEIGHT; yAddr = yAddr + COMBINED_PIXELS)
-						{
-							if (glPLSlices[idx][xAddr][yAddr/COMBINED_PIXELS] != 0)
-							{
-								for(int r = 0; r < 1000; r++)
-								{
-									std::cout << "Ha! I caught you, the pixel which is not clear!" << std::endl;
-									std::cout << "x is: " << xAddr << "\t y is: " << yAddr << "\t idx is: " << idx << std::endl;
-								}
-							}
-						}
-					}
-				}
-
-#ifdef DEBUG
-				/* This is only for C-simulation and debugging. */
-				debugRegion:
-				{
-					for(int i = 0; i < BLOCK_SIZE + 2 * SEARCH_DISTANCE; i++)
-					{
-						readBlockCols(xRd - BLOCK_SIZE/2 - SEARCH_DISTANCE + i, yRd , idx + 1, idx + 2, out1_debug[i], out2_debug[i]);
-						readBlockColsScale1(xRd/2 - BLOCK_SIZE/2 - SEARCH_DISTANCE + i, yRd/2 , idx + 1, idx + 2, out1Scale1_debug[i], out2Scale1_debug[i]);
-						readBlockColsScale2(xRd/4 - BLOCK_SIZE/2 - SEARCH_DISTANCE + i, yRd/4 , idx + 1, idx + 2, out1Scale2_debug[i], out2Scale2_debug[i]);
-					}
-				}
-#endif
-
-				writePix(xRd, yRd, idx);
-
-				resetPix(resetCnt/(PIXS_PER_COL), (resetCnt % (PIXS_PER_COL)) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-				resetCnt++;
-			}
-			else if(xOffSet < BLOCK_SIZE + 2 * SEARCH_DISTANCE + 1)
-			{
-				pix_t out1[BLOCK_SIZE + 2 * SEARCH_DISTANCE];
-				pix_t out2[BLOCK_SIZE + 2 * SEARCH_DISTANCE];
-
-	            pix_t out1Scale1[BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-	            pix_t out2Scale1[BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-
-	            pix_t out1Scale2[BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-	            pix_t out2Scale2[BLOCK_SIZE+ 2 * SEARCH_DISTANCE];
-
-				readBlockCols(xRd - BLOCK_SIZE/2 - SEARCH_DISTANCE + xOffSet - 1, yRd , idx + 1, idx + 2, out1, out2);
-				readBlockColsScale1(xRd/2 - BLOCK_SIZE/2 - SEARCH_DISTANCE + xOffSet - 1, yRd/2 , idx + 1, idx + 2, out1Scale1, out2Scale1);
-				readBlockColsScale2(xRd/4 - BLOCK_SIZE/2 - SEARCH_DISTANCE + xOffSet - 1, yRd/4 , idx + 1, idx + 2, out1Scale2, out2Scale2);
-
-				apIntBlockCol_t refBlockCol;
-				apIntBlockCol_t tagBlockCol;
-
-				apIntBlockCol_t refBlockColScale1;
-				apIntBlockCol_t tagBlockColScale1;
-
-				apIntBlockCol_t refBlockColScale2;
-				apIntBlockCol_t tagBlockColScale2;
-
-				for (int8_t l = 0; l < BLOCK_SIZE + 2 * SEARCH_DISTANCE; l++)
-				{
-					refBlockCol.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1[l];
-					tagBlockCol.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2[l];
-
-					refBlockColScale1.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1Scale1[l];
-					tagBlockColScale1.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2Scale1[l];
-
-					refBlockColScale2.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out1Scale2[l];
-					tagBlockColScale2.range(BITS_PER_PIXEL * l + BITS_PER_PIXEL - 1, BITS_PER_PIXEL * l) = out2Scale2[l];
-				}
-
-				if (xOffSet > SEARCH_DISTANCE && xOffSet <= SEARCH_DISTANCE + BLOCK_SIZE)
-				{
-					refStreamOut << refBlockCol;
-					refStreamOutScale1 <<  refBlockColScale1;
-					refStreamOutScale2 <<  refBlockColScale2;
-				}
-				tagStreamOut << tagBlockCol;
-				tagStreamOutScale1 << tagBlockColScale1;
-				tagStreamOutScale2 << tagBlockColScale2;
-			}
-			else
-			{
-				// Reset two pixels at the same time because it has two write ports.
-				resetPix(resetCnt/(PIXS_PER_COL), (resetCnt % (PIXS_PER_COL)) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-				resetCnt++;
-				resetPix(resetCnt/(PIXS_PER_COL), (resetCnt % (PIXS_PER_COL)) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-				resetCnt++;
-			}
-		}
-//	}
-
-#ifdef DEBUG
-	printRegion: if(xRd == 211 && yRd == 242)
-	{
-		std::cout << "Reference block of scale 0 is: " << std::endl;
-		for(uint8_t blockX = SEARCH_DISTANCE; blockX < BLOCK_SIZE + SEARCH_DISTANCE; blockX++)
-		{
-			for(uint8_t blockY = SEARCH_DISTANCE; blockY < BLOCK_SIZE + SEARCH_DISTANCE; blockY++)
-			{
-				std::cout << out1_debug[blockX][blockY] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-
-		std::cout << "target block of scale 0 is: " << std::endl;
-		for(uint8_t blockX = 0; blockX < BLOCK_SIZE + 2 * SEARCH_DISTANCE; blockX++)
-		{
-			for(uint8_t blockY = 0; blockY < BLOCK_SIZE + 2 * SEARCH_DISTANCE; blockY++)
-			{
-				std::cout << out2_debug[blockX][blockY] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-
-		std::cout << "Reference block of scale 1 is: " << std::endl;
-		for(uint8_t blockX = SEARCH_DISTANCE; blockX < BLOCK_SIZE + SEARCH_DISTANCE; blockX++)
-		{
-			for(uint8_t blockY = SEARCH_DISTANCE; blockY < BLOCK_SIZE + SEARCH_DISTANCE; blockY++)
-			{
-				std::cout << out1Scale1_debug[blockX][blockY] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-
-		std::cout << "target block of scale 1 is: " << std::endl;
-		for(uint8_t blockX = 0; blockX < BLOCK_SIZE + 2 * SEARCH_DISTANCE; blockX++)
-		{
-			for(uint8_t blockY = 0; blockY < BLOCK_SIZE + 2 * SEARCH_DISTANCE; blockY++)
-			{
-				std::cout << out2Scale1_debug[blockX][blockY] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-
-		std::cout << "Reference block of scale 2 is: " << std::endl;
-		for(uint8_t blockX = SEARCH_DISTANCE; blockX < BLOCK_SIZE + SEARCH_DISTANCE; blockX++)
-		{
-			for(uint8_t blockY = SEARCH_DISTANCE; blockY < BLOCK_SIZE + SEARCH_DISTANCE; blockY++)
-			{
-				std::cout << out1Scale2_debug[blockX][blockY] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-
-		std::cout << "target block of scale 2 is: " << std::endl;
-		for(uint8_t blockX = 0; blockX < BLOCK_SIZE + 2 * SEARCH_DISTANCE; blockX++)
-		{
-			for(uint8_t blockY = 0; blockY < BLOCK_SIZE + 2 * SEARCH_DISTANCE; blockY++)
-			{
-				std::cout << out2Scale2_debug[blockX][blockY] << "\t";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-	}
-
-
-	resetLoop: for (int16_t resetCnt = 0; resetCnt < SLICE_HEIGHT * SLICE_WIDTH / COMBINED_PIXELS; resetCnt = resetCnt + 2)
-	{
-		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-	}
-#endif
-
-
-//	resetLoop: for (int16_t resetCnt = 0; resetCnt < SLICE_HEIGHT * SLICE_WIDTH / COMBINED_PIXELS; resetCnt = resetCnt + 2)
-//	{
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//		resetPix(resetCnt/PIXS_PER_COL, (resetCnt % PIXS_PER_COL + 1) * COMBINED_PIXELS, (sliceIdx_t)(idx + 3));
-//	}
-
-}
-
 static uint16_t areaEventRegs[AREA_NUMBER][AREA_NUMBER];
 
+/**
+ * Function description:
+ * The pre-processing module.
+ * It accepts the raw event data stream as input and combines the seperate streams into one data stream for
+ * transfer to the final output module convieniently.
+ * It is also responsible for removing boarder events and rotating event slices.
+ * Input:
+ * xStreamIn, yStreamIn, polStreamIn, tsStreamIn: raw event stream in seperate channels
+ * xStreamOut, yStreamOut, polStreamOut, tsStreamOut: event stream sent for further processing
+ * idxStreamOut: curent event slice index stream
+ * packetStreamOut: The packed event data stream
+ */
 void preProcessStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn,
 		hls::stream< ap_uint<1> > &polStreamIn,
 		hls::stream< ap_uint<64> > &tsStreamIn,
@@ -607,25 +168,10 @@ void preProcessStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uin
 	static uint32_t lastTsHW = 0, currentTsHW = 0;
 	static ap_uint<1> areaCountExceeded = false;
 
-//	if(!idxStreamIn.empty())
-	{
-//		sliceIdxReg = idxStreamIn.read();
-	}
-//	else
-	{
-//		sliceIdxReg = sliceIdxReg;
-	}
-
-//	static uint16_t tmpThr = INIT_AREA_THERSHOLD;
-
 	if(glConfig[3] == 1)         // Using external threshold
 	{
 		glSFASTAreaCntThr = glConfig.range(23, 8);
 	}
-//	else                        // Using the onboard hardcoded threshold
-//	{
-//		glSFASTAreaCntThr = SFAST_THRESHOLD;
-//	}
 	glSFASTAreaCntThrBak = glSFASTAreaCntThr;  // store it in the shadow register for status output
 
 	ap_uint<1> rotateFlagTmp = 0;
@@ -636,25 +182,6 @@ void preProcessStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uin
 
 		lastSiceIdx = currentSliceIdx;
 		currentSliceIdx = sliceIdxReg;
-
-		if(currentSliceIdx != lastSiceIdx)
-		{
-	        // Check the accumulation slice is clear or not, only for debugging
-	//        for(int32_t yAddr = 0; yAddr < SLICE_WIDTH/4; yAddr++)
-	//        {
-	//            for(int32_t xAddr = 0; xAddr < SLICE_HEIGHT/4; xAddr = xAddr + COMBINED_PIXELS)
-	//            {
-	//                if (glPLSFASTSliceScale2[currentSliceIdx][yAddr][xAddr/COMBINED_PIXELS] != 0)
-	//                {
-	//                    for(int r = 0; r < 1; r++)
-	//                    {
-	//                        std::cout << "Ha! I caught you from HW, the pixel which is not clear!" << std::endl;
-	//                        std::cout << "x is: " << xAddr << "\t y is: " << yAddr << "\t idx is: " << currentSliceIdx << std::endl;
-	//                    }
-	//                }
-	//            }
-	//        }
-		}
 
 	    lastTsHW = currentTsHW;
 	    currentTsHW = ts;
@@ -689,7 +216,6 @@ void preProcessStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uin
 	tmpOutput.range(95, 33) = ts.range(62, 0);
 	packetEventDataStream << tmpOutput;
 
-	// TODO: Removed the hardcoded code invalid event
 	const int max_scale = 2;
 	// only check if not too close to border
 	const int cs = 4;
@@ -699,16 +225,7 @@ void preProcessStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uin
 	if ((x >> max_scale) < cs || (x >> max_scale) >= (DVS_REAL_WIDTH >> max_scale) - cs ||
 			(y >> max_scale) < cs || (y >> max_scale) >= (DVS_REAL_HEIGHT >> max_scale) - cs)
 	{
-//		x = 0;
-//		y = 0;
 		ts = 0;
-	}
-	else
-	{
-		 // The reason why we sub cs-4 is to reduce the memory we need.
-		 // In this case, only memory for valid events is required.
-//		x -= cs-4;
-//		y -= cs-4;
 	}
 
 	xStreamOut << (X_TYPE)x;
@@ -716,10 +233,6 @@ void preProcessStream(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uin
 	polStreamOut << pol;
 	tsStreamOut << (ap_uint<TS_TYPE_BIT_WIDTH>)ts;
 	idxStreamOut << sliceIdxReg;
-
-//	xStreamOut << (X_TYPE)x;
-//	yStreamOut << (Y_TYPE)y;
-//	tsStreamOut << (ap_uint<TS_TYPE_BIT_WIDTH>)ts;
 
 	inEventsNum++;
 	glStatus.inEventsNum = inEventsNum;
@@ -751,11 +264,22 @@ void initStageInterleaveStream(ap_uint<2> *stageOutStream)
 }
 
 
+/**
+ * Function description:
+ * Read circle data from the event slice.
+ * It is a general circle that supports read inner or outer circle based on the current stage.
+ * Input:
+ * xStream, yStream, polStream, tsStream: current event stream
+ * idxStream: current event slice index stream
+ * Output:
+ * outputDataStream: inner/outer circle data
+ * *sizeStreamOut1, *sizeStreamOut2: the circle data length, it will be used by 2 other PEs to 
+ * determine if it is an inner circle 
+ */
 template<int READ_NPC>   //  Due to the memory has 2 ports at most for arbitrary reading, here this number could be only 1 or 2.
 void rwSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> &yStream,
 		hls::stream< ap_uint<1> > &polStream, hls::stream<sliceIdx_t> &idxStream,
 		hls::stream< ap_uint<TS_TYPE_BIT_WIDTH> > &tsStream,
-//		ap_uint<2> stageStream,
 		hls::stream< ap_uint<BITS_PER_PIXEL * OUTER_SIZE> > &outputDataStream,
 		ap_uint<5> *sizeStreamOut1,
 		ap_uint<5> *sizeStreamOut2)
@@ -771,14 +295,6 @@ void rwSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> 
 
 	ap_uint<BITS_PER_PIXEL * OUTER_SIZE> tmpData = 0;
 	ap_uint<5> size = OUTER_SIZE;
-
-//	x = xStream.read();
-//	y = yStream.read();
-//	pol = polStream.read();
-//	ts = tsStream.read();
-//	idx = idxStream.read();
-
-//	stage = stageStream.read();
 
 	for(ap_int<8> i = -1 * READ_NPC; i < OUTER_SIZE; i = i + READ_NPC)
 	{
@@ -799,7 +315,6 @@ void rwSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> 
 			if(ts == 0)
 			{
 				size = 0;
-//				break;
 			}
 		}
 		else
@@ -826,7 +341,6 @@ void rwSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> 
             {
             	indexUnified = xOuterTest;
             }
-//		            indexUnified = (stage==0) ? xInnerTest : xOuterTest;
 
             readNPCLoop:
             for (ap_uint<8> k = 0; k < READ_NPC; k++)
@@ -843,11 +357,6 @@ void rwSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> 
                 tmpData = tmpData >> BITS_PER_PIXEL;
                 tmpData.range(BITS_PER_PIXEL * OUTER_SIZE - 1, BITS_PER_PIXEL * OUTER_SIZE - BITS_PER_PIXEL) = ((stage == 0) && (i >= INNER_SIZE)) ?  pix_t(0) : tmpTmpData;
             }
-
-//			resetSFASTPix(ap_uint<10>((resetCnt/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCnt % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(idx + 3));
-//			resetCnt++;
-//			resetSFASTPix(ap_uint<10>((resetCnt/(PIXS_PER_COL/4)) % (SLICE_WIDTH/4)), ap_uint<10>((resetCnt % (PIXS_PER_COL/4)) * COMBINED_PIXELS), (sliceIdx_t)(idx + 3));
-//			resetCnt++;
 		}
 	}
 
@@ -857,16 +366,16 @@ void rwSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> 
 	*sizeStreamOut2 = size;
 }
 
-void testRWSAEPerfectLoopStreamV2(hls::stream<X_TYPE> &xStream, hls::stream<Y_TYPE> &yStream,
-		hls::stream< ap_uint<1> > &polStream, hls::stream<sliceIdx_t> &idxStream,
-		hls::stream< ap_uint<TS_TYPE_BIT_WIDTH> > &tsStream,
-		hls::stream< ap_uint<BITS_PER_PIXEL * OUTER_SIZE> > &outputDataStream,
-		ap_uint<5> *sizeStreamOut1,
-		ap_uint<5> *sizeStreamOut2)
-{
-	rwSAEPerfectLoopStreamV2<2>(xStream, yStream, polStream, idxStream, tsStream, outputDataStream, sizeStreamOut1, sizeStreamOut2);
-}
-
+/**
+ * Function description: 
+ * data array is stored as a wide data. 
+ * This function is used to read a signle data from a wide data.
+ * Input:
+ * colData: The wide data to be read
+ * idx: the position of the single data to be read
+ * Output:
+ * The desired single data
+ */
 template<int UNIT_DATA_BITS, int WIDE_DATA_BITS>
 ap_uint< UNIT_DATA_BITS > readUnitDataFromWideData(ap_uint< WIDE_DATA_BITS > colData, uint8_t idx)
 {
@@ -896,8 +405,15 @@ void WriteUnitDataToWideData(ap_uint< WIDE_DATA_BITS > *colData, uint8_t idx, ap
 	}
 }
 
-// Function Description: convert the current data array to sorted idx array.
-// Compared with V2, this version use a lot of shift logic tricks and it saves a lot of LUTs (most of them are MUXs).
+/**
+ * Function Description: convert the current data array to sorted idx array.
+ * Compared with V2, this version use a lot of shift logic tricks and it saves a lot of LUTs (most of them are MUXs).
+ * Input:
+ * tsStream: input circle data. EFAST use timestamp surface and thus this name is kept to SFAST.
+ * Output:
+ * newIdx: the sorted index array
+ * sortedData: sorted output data
+ */
 template<int NPC>
 void sortedIdxStreamV3(hls::stream< ap_uint<BITS_PER_PIXEL * OUTER_SIZE> > &tsStream, ap_uint<5> size, ap_uint<5*OUTER_SIZE> *newIdx, ap_uint<BITS_PER_PIXEL * OUTER_SIZE> *sortedData)
 {
@@ -1011,6 +527,16 @@ void testMuxWithPrior(ap_uint< 12*4 > din,  ap_uint<12> sel, ap_uint<4> *dout)
 static ap_uint<8> glFinalMaxOuterStreakSize = 0;
 static ap_uint<8> glFinalMaxOuterStreakStartPosition = 0;
 
+/**
+ * Function description:
+ * Check if the sorted index array contains a corner
+ * Input:
+ * idxData: sorted index data array
+ * sortedData: sorted data
+ * size: the circle size (to determine weather it is inner or outer)
+ * Output:
+ * isCorner: return if this circle contains a corner
+ */
 template<int NPC>
 void checkIdxGeneralV3(ap_uint<5*OUTER_SIZE> idxData, ap_uint<BITS_PER_PIXEL * OUTER_SIZE> sortedData, ap_uint<5> size, ap_uint<1> *isCorner)
 {
@@ -1158,35 +684,6 @@ void checkIdxGeneralV3(ap_uint<5*OUTER_SIZE> idxData, ap_uint<BITS_PER_PIXEL * O
 				}
 			}
 
-//			ap_uint< OUTER_STREAK_RANGE > tempCondSel = 0;
-//			ap_uint< OUTER_STREAK_RANGE *  OUTER_STREAK_SIZE_DATA_BITS > outerStreakSizeDin = 0;
-//			ap_uint< OUTER_STREAK_RANGE * NPC> streakPositionSelDin = 0;
-//
-//			// Generate the sel signal for get the maximum streak size and obtain the current max streak size in this iteration.
-//			for(int tempCondIdx = 0; tempCondIdx < OUTER_STREAK_SIZE_END - OUTER_STREAK_SIZE_START + 1; tempCondIdx++)
-//			{
-//				tempCondSel[tempCondIdx] = (tempCond[tempCondIdx] != 0);
-//				streakPositionSelDin.range((tempCondIdx + 1) * NPC - 1, tempCondIdx * NPC) = tempCond[tempCondIdx];
-//				outerStreakSizeDin.range((tempCondIdx + 1) * OUTER_STREAK_SIZE_DATA_BITS - 1, tempCondIdx * OUTER_STREAK_SIZE_DATA_BITS) = tempCondIdx + OUTER_STREAK_SIZE_START;
-//			}
-//
-//			// Get the current max streak size.
-//			ap_uint<OUTER_STREAK_SIZE_DATA_BITS> currentMaxOuterStreakSize = 0;
-//			muxWithPrior<OUTER_STREAK_SIZE_DATA_BITS, OUTER_STREAK_RANGE>(outerStreakSizeDin, tempCondSel, &currentMaxOuterStreakSize);
-//
-//			// Get the position sel signal.
-//			ap_uint<NPC> streakPositionSel = 0;
-//			muxWithPrior<NPC, OUTER_STREAK_RANGE>(streakPositionSelDin, tempCondSel, &streakPositionSel);
-//
-//			// Get the start position for the maximum streak.
-//			ap_uint<OUTER_STREAK_POSITION_DATA_BITS> currentMaxOuterStreakStartPosition = 0;
-//			ap_uint< NPC * OUTER_STREAK_POSITION_DATA_BITS > outerPositionDin = 0;
-//			for(int outerPositionIdx = 0; outerPositionIdx < NPC; outerPositionIdx++)
-//			{
-//				outerPositionDin.range((outerPositionIdx + 1) * OUTER_STREAK_POSITION_DATA_BITS - 1, outerPositionIdx * OUTER_STREAK_POSITION_DATA_BITS) = i + outerPositionIdx;
-//			}
-//			muxWithPrior<OUTER_STREAK_POSITION_DATA_BITS, NPC>(outerPositionDin, streakPositionSel, &currentMaxOuterStreakStartPosition);
-
 			// Compare the iteration max streak size to the current max streak size.
 			if(currentMaxOuterStreakSize > finalMaxOuterStreakSize)
 			{
@@ -1212,7 +709,8 @@ void checkIdxGeneralV3(ap_uint<5*OUTER_SIZE> idxData, ap_uint<BITS_PER_PIXEL * O
 	glFinalMaxOuterStreakStartPosition = finalMaxOuterStreakStartPosition;
 }
 
-// This function checks if the maximum streak size corner satisfy some conditions.
+// This function checks if the maximum streak size corner satisfy some specific conditions.
+// Filter some invalid corners.
 void finalCornerChecking(ap_uint<1> isCornerIn, ap_uint<1> *isCornerOut)
 {
 #pragma HLS PIPELINE
@@ -1254,6 +752,10 @@ void finalCornerChecking(ap_uint<1> isCornerIn, ap_uint<1> *isCornerOut)
 	*isCornerOut = isCornerRet;
 }
 
+/**
+ * Function description:
+ * If a corner is both an inner corner and outer corner, then it is the final corner.
+ */
 void feedbackInterleaveStream(ap_uint<1> isStageCorner, hls::stream< ap_uint<1> > &isFinalCornerStream)
 {
 #pragma HLS INLINE off
@@ -1284,19 +786,27 @@ void feedbackInterleaveStream(ap_uint<1> isStageCorner, hls::stream< ap_uint<1> 
 
 	if(glFeedbackCounter%(GROUP_EVENTS_NUM * 2) < GROUP_EVENTS_NUM)
 	{
-//		stageStream << outputStage;
-//		glStageInStream << tmpStage;
 		isFinalCornerStream << isStageCorner;
 	}
 	else
 	{
-//		glStageInStream << glStage;
 		isFinalCornerStream << isStageCorner;
 	}
 }
 
 static uint64_t outEventsNum, cornerEventsNum;
 
+/**
+ * Function description:
+ * Split the packed event data stream to several seperate data stram for following IP to process.
+ * It also sends the custom data stream (here is simply the corner flag stream) along with the event stream.
+ * Input:
+ * packetEventDataStream: packed event data stream
+ * stageCornerStream: the inner/outer circle corner result stream
+ * Output:
+ * xStreamOut, yStreamoUT, polStreamOut, tsStreamOut: output raw event data stream
+ * custDataStreamOut: custom data (here is the corner flag) stream
+ */
 void combineOutputStream(hls::stream< ap_uint<96> > &packetEventDataStream, hls::stream< ap_uint<1> > &stageCornerStream,
 						hls::stream< ap_uint<16> > &xStreamOut, hls::stream< ap_uint<16> > &yStreamOut,
 						hls::stream< ap_uint<1> > &polStreamOut,
@@ -1349,12 +859,6 @@ void combineOutputStream(hls::stream< ap_uint<96> > &packetEventDataStream, hls:
 		custDataStreamOut << retData;
 	}
 
-//	xStreamOut << x;
-//	yStreamOut << y;
-//	polStreamOut << pol;
-//	tsStreamOut << ts;
-//	custDataStreamOut << cornerRet;
-
 	outEventsNum++;
 	if(cornerRet == 1)
 	{
@@ -1367,6 +871,18 @@ void combineOutputStream(hls::stream< ap_uint<96> > &packetEventDataStream, hls:
 }
 
 
+/**
+ * Function description: 
+ * This is the top module. It accepts the raw event stream as input.
+ * It returns the event stream along with its corner flag.
+ * The data exchange of the module is desigend in AXIS interface.
+ * Control and status is designed as AXI4Liet interface.
+ * Input:
+ * xStreamIn, yStreamIn, tsStreamIn, polStreamIn: the raw event stream but in seperated stream channel.
+ * Output:
+ * xStreamOut, yStreamOut, tsStreamOut, polStreamOut: the same raw event stream as input
+ * isFinalCornerStream: the corner flag stream
+ */
 void SFAST_process_data(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_uint<16> > &yStreamIn,
 		hls::stream< ap_uint<64> > &tsStreamIn, hls::stream< ap_uint<1> > &polStreamIn,
 		hls::stream< ap_uint<16> > &xStreamOut, hls::stream< ap_uint<16> > &yStreamOut, hls::stream< ap_uint<64> > &tsStreamOut, hls::stream< ap_uint<1> > &polStreamOut,
@@ -1445,25 +961,11 @@ void SFAST_process_data(hls::stream< ap_uint<16> > &xStreamIn, hls::stream< ap_u
     GetData: preProcessStream(xStreamIn, yStreamIn, polStreamIn, tsStreamIn, xStream, yStream, polStream, idxStream, tsStream, pktEventDataStream);
     Processing:
 	{
-//		initStageInterleaveStream(&stageOut);
-//		rwSAEPerfectLoopStream<2>(xStream, yStream, tsStream, stageOutStream, outer, &size);
-//		rwSAEStreamV2<2>(xStream, yStream, tsStream, stageOutStream, outer, sizeStream1, sizeStream2, sizeStream3);
+        // use 2 copies
 		rwSAEPerfectLoopStreamV2<2>(xStream, yStream, polStream, idxStream, tsStream, inStream, &size1, &size2);
-//		sizeStream1 >> size1;
-//		convertInterface<4>(outer, size1, inStream);
-//		sizeStream2 >> size2;
-//		sortedIdxStream<5>(inStream, size1, idxData);
+        // use 4 copies
 		sortedIdxStreamV3<4>(inStream, size1, &idxDataWide, &sortedData);
-		getIdxDataRegion:
-		{
-//			for(int i = 0; i < OUTER_SIZE; i++)
-//			{
-//	#pragma HLS UNROLL
-//				idxData[i] = idxDataWide.range(4, 0);
-//				idxDataWide = idxDataWide >> 5;
-//			}
-//			sizeStream2 >> size2;
-		}
+        // use 4 copies
 		checkIdxGeneralV3<4>(idxDataWide, sortedData, size2, &isStageCorner);   // If resource is not enough, decrease this number to increase II a little.
 		finalCornerChecking(isStageCorner, &isCorner);
 		feedbackInterleaveStream(isCorner, stageCornerStream);
