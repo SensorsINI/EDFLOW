@@ -21,6 +21,6 @@ Detail steps are shown in that folder.
 Interested in this project, check https://sites.google.com/view/edflow21/home for videos and benchmarking code and data.
 
 ## Citation
-M. LIu and T. Delbruck, “EDFLOW: Event Driven Optical Flow Camera with Keypoint Detection and Adaptive Block Matching,” IEEE Trans. Circuits Syst. Video Technol., vol. (under review), 2022. 
+M. LIu and T. Delbruck, “EDFLOW: Event Driven Optical Flow Camera with Keypoint Detection and Adaptive Block Matching,” IEEE Trans. Circuits Syst. Video Technol., vol. (accepted), 2022. 
 
 Please cite this paper if using data or code from this project.
