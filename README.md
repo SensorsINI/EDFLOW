@@ -21,12 +21,12 @@ Detail steps are shown in that folder.
 Interested in this project, check https://sites.google.com/view/edflow21/home for videos and benchmarking code and data.
 
 ## Citation
-@article{liu2022edflow,
-  title={EDFLOW: Event Driven Optical Flow Camera with Keypoint Detection and Adaptive Block Matching},
-  author={Liu, Min and Delbruck, Tobi},
-  journal={IEEE Transactions on Circuits and Systems for Video Technology},
-  year={2022},
-  publisher={IEEE}
-}
+@article{liu2022edflow,  
+  title={EDFLOW: Event Driven Optical Flow Camera with Keypoint Detection and Adaptive Block Matching},  
+  author={Liu, Min and Delbruck, Tobi},  
+  journal={IEEE Transactions on Circuits and Systems for Video Technology},  
+  year={2022},  
+  publisher={IEEE}  
+  }
 
 Please cite this paper if using data or code from this project.
